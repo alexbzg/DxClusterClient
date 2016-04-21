@@ -247,7 +247,10 @@ namespace DxClusterClient
                     AsyncConnection clusterCn = new AsyncConnection();
                     clusterCn.lineReceived += lineReceived;
                     if (clusterCn.connect(host, port))
+                    {
                         clusterCn.sendCommand(callsign);
+                        this.Text += " connected to " + host + ":" + port.ToString();
+                    }
 
                 } else
                     Close();
@@ -257,8 +260,12 @@ namespace DxClusterClient
 
         private void lineReceived( object obj, LineReceivedEventArgs ea )
         {
+            string line = ea.line.TrimEnd('\r', '\n');
+            this.Invoke((MethodInvoker)delegate {
+                tbCluster.AppendText( line + Environment.NewLine );
+            });
             string country = "";
-            Match mtchDX = rgxDX.Match(ea.line);
+            Match mtchDX = rgxDX.Match(line);
             if ( mtchDX.Success )
             {
                 string cs = mtchDX.Groups[3].Value;
