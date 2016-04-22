@@ -106,13 +106,24 @@ namespace DxClusterClient
             public int port;
         }
 
+        public class ADIFRecord
+        {
+            public string band;
+            public string mode;
+            public string prefix;
+            public bool qsl;
+            public bool lotw;
+        }
+
         private Dictionary<string, string>[] prefixes =  new Dictionary<string, string>[2] { new Dictionary<string, string>(), new Dictionary<string, string>() };
+        private Dictionary<string, string> countryCodes = new Dictionary<string, string>();
         private Regex rgxDX = new Regex(@"DX de (\S+):\s+(\d+\.\d+)\s+(\S+)\s+(.+)\s(\d\d\d\dZ)");
         private List<Mode> modes = new List<Mode>();
         private BindingList<DxItem> blDxData = new BindingList<DxItem>();
         private BindingSource bsDxData;
         private AppSettings settings = new AppSettings();
         private AsyncConnection clusterCn;
+        private List<ADIFRecord> adifData;
         
 
 
@@ -177,6 +188,75 @@ namespace DxClusterClient
                 } while (srM.Peek() >= 0);
 
             }
+
+            using (StreamReader sr = new StreamReader(Application.StartupPath + "\\CountryCode.csv"))
+            {
+                do
+                {
+                    string line = sr.ReadLine();
+                    string[] parts = line.Split( ",".ToCharArray(), 3);
+                    if ( !parts[1].Equals( string.Empty ) )
+                        countryCodes.Add(parts[0], parts[1]);
+                } while (sr.Peek() >= 0);
+
+            }
+
+            loadADIF(Application.StartupPath + "\\fullAdif.adi");
+        }
+
+        private void loadADIF( string adifFP )
+        {
+            adifData = new List<ADIFRecord>();
+            bool eoh = false;
+            using (StreamReader sr = new StreamReader(adifFP))
+            {
+                do
+                {
+                    string line = sr.ReadLine();
+                    if (!eoh)
+                    {
+                        if (line.Contains("<EOH>"))
+                            eoh = true;
+                        continue;
+                    }
+                    if (!line.StartsWith("<"))
+                        continue;
+                    string mode = getADIFField(line, "MODE");
+                    string dxcc = getADIFField(line, "DXCC");
+                    string pfx = "";
+                    if (countryCodes.ContainsKey(dxcc))
+                        pfx = countryCodes[dxcc];
+                    string band = getADIFField(line, "BAND");
+                    bool qsl = getADIFField(line, "QSL_RCVD").Equals("Y");
+                    bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
+                    if (!adifData.Exists(
+                        x =>
+                            x.band.Equals(band) &&
+                                x.mode.Equals(mode) &&
+                                x.prefix.Equals(pfx) &&
+                                (x.qsl || !qsl) &&
+                                (x.lotw || !lotw)))
+                        adifData.Add(new ADIFRecord {
+                            band = band,
+                            mode = mode,
+                            prefix = pfx,
+                            qsl = qsl,
+                            lotw = lotw
+                        });
+                } while (sr.Peek() >= 0);
+
+            }
+
+        }
+
+        public static string getADIFField( string line, string field )
+        {
+            int iheader = line.IndexOf("<" + field + ":");
+            if (iheader < 0)
+                return "";
+            int ibeg = line.IndexOf(">", iheader) + 1;
+            int iend = line.IndexOf(" ", ibeg);
+            return line.Substring(ibeg, iend - ibeg);
         }
 
         private string configFilePath()
