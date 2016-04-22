@@ -112,6 +112,7 @@ namespace DxClusterClient
         private BindingList<DxItem> blDxData = new BindingList<DxItem>();
         private BindingSource bsDxData;
         private AppSettings settings = new AppSettings();
+        private AsyncConnection clusterCn;
         
 
 
@@ -244,7 +245,7 @@ namespace DxClusterClient
                         settings.port = port;
                     writeConfig();
 
-                    AsyncConnection clusterCn = new AsyncConnection();
+                    clusterCn = new AsyncConnection();
                     clusterCn.lineReceived += lineReceived;
                     if (clusterCn.connect(host, port))
                     {
@@ -307,6 +308,25 @@ namespace DxClusterClient
             login();
         }
 
+        private void bSendCmd_Click(object sender, EventArgs e)
+        {
+            sendCmd();
+        }
+
+        private void sendCmd()
+        {
+            if (!tbCmd.Text.Equals(string.Empty))
+            {
+                clusterCn.sendCommand(tbCmd.Text);
+                tbCmd.Text = "";
+            }
+        }
+
+        private void tbCmd_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+                sendCmd();
+        }
     }
 }
 

@@ -39,9 +39,9 @@
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.tbCluster = new System.Windows.Forms.TextBox();
-            this.tbCmd = new System.Windows.Forms.TextBox();
             this.bSendCmd = new System.Windows.Forms.Button();
+            this.tbCmd = new System.Windows.Forms.TextBox();
+            this.tbCluster = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -155,6 +155,26 @@
             this.splitContainer1.SplitterDistance = 313;
             this.splitContainer1.TabIndex = 3;
             // 
+            // bSendCmd
+            // 
+            this.bSendCmd.Location = new System.Drawing.Point(953, 283);
+            this.bSendCmd.Name = "bSendCmd";
+            this.bSendCmd.Size = new System.Drawing.Size(123, 28);
+            this.bSendCmd.TabIndex = 2;
+            this.bSendCmd.Text = "Send";
+            this.bSendCmd.UseVisualStyleBackColor = true;
+            this.bSendCmd.Click += new System.EventHandler(this.bSendCmd_Click);
+            // 
+            // tbCmd
+            // 
+            this.tbCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCmd.Location = new System.Drawing.Point(0, 284);
+            this.tbCmd.Name = "tbCmd";
+            this.tbCmd.Size = new System.Drawing.Size(953, 26);
+            this.tbCmd.TabIndex = 1;
+            this.tbCmd.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCmd_KeyDown);
+            // 
             // tbCluster
             // 
             this.tbCluster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -167,24 +187,6 @@
             this.tbCluster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbCluster.Size = new System.Drawing.Size(1075, 279);
             this.tbCluster.TabIndex = 0;
-            // 
-            // tbCmd
-            // 
-            this.tbCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCmd.Location = new System.Drawing.Point(0, 284);
-            this.tbCmd.Name = "tbCmd";
-            this.tbCmd.Size = new System.Drawing.Size(953, 26);
-            this.tbCmd.TabIndex = 1;
-            // 
-            // bSendCmd
-            // 
-            this.bSendCmd.Location = new System.Drawing.Point(953, 283);
-            this.bSendCmd.Name = "bSendCmd";
-            this.bSendCmd.Size = new System.Drawing.Size(123, 28);
-            this.bSendCmd.TabIndex = 2;
-            this.bSendCmd.Text = "Send";
-            this.bSendCmd.UseVisualStyleBackColor = true;
             // 
             // FMain
             // 
