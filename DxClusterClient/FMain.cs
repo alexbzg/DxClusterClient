@@ -106,14 +106,35 @@ namespace DxClusterClient
             public int port;
         }
 
-        public class ADIFRecord
+        public class ADIFHeader
         {
+            public string prefix;
             public string band;
             public string mode;
-            public string prefix;
+
+            public override bool Equals(object other)
+            {
+                var otherAH = other as ADIFHeader;
+                if (otherAH == null)
+                    return false;
+                return ( prefix == otherAH.prefix ) && ( band == otherAH.band ) && ( mode == otherAH.mode );
+            }
+
+            public override int GetHashCode()
+            {
+                return ( prefix + " " + band + " " + mode ).GetHashCode();
+            }
+
+        }
+
+        public class ADIFState
+        {
+            public bool contact;
             public bool qsl;
             public bool lotw;
         }
+
+        public class ADIFData : Dictionary<ADIFHeader, ADIFState> { }
 
         private Dictionary<string, string>[] prefixes =  new Dictionary<string, string>[2] { new Dictionary<string, string>(), new Dictionary<string, string>() };
         private Dictionary<string, string> countryCodes = new Dictionary<string, string>();
@@ -123,7 +144,7 @@ namespace DxClusterClient
         private BindingSource bsDxData;
         private AppSettings settings = new AppSettings();
         private AsyncConnection clusterCn;
-        private List<ADIFRecord> adifData;
+        private ADIFData adifData;
         
 
 
@@ -206,7 +227,7 @@ namespace DxClusterClient
 
         private void loadADIF( string adifFP )
         {
-            adifData = new List<ADIFRecord>();
+            adifData = new ADIFData();
             bool eoh = false;
             using (StreamReader sr = new StreamReader(adifFP))
             {
@@ -226,23 +247,19 @@ namespace DxClusterClient
                     string pfx = "";
                     if (countryCodes.ContainsKey(dxcc))
                         pfx = countryCodes[dxcc];
+                    else
+                        continue;
                     string band = getADIFField(line, "BAND");
                     bool qsl = getADIFField(line, "QSL_RCVD").Equals("Y");
                     bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
-                    if (!adifData.Exists(
-                        x =>
-                            x.band.Equals(band) &&
-                                x.mode.Equals(mode) &&
-                                x.prefix.Equals(pfx) &&
-                                (x.qsl || !qsl) &&
-                                (x.lotw || !lotw)))
-                        adifData.Add(new ADIFRecord {
-                            band = band,
-                            mode = mode,
-                            prefix = pfx,
-                            qsl = qsl,
-                            lotw = lotw
-                        });
+                    ADIFHeader adifH = new ADIFHeader { prefix = pfx, band = band, mode = mode };
+                    if (adifData.ContainsKey(adifH))
+                    {
+                        adifData[adifH].qsl |= qsl;
+                        adifData[adifH].lotw |= lotw;
+                    }
+                    else
+                        adifData[adifH] = new ADIFState { contact = true, qsl = qsl, lotw = lotw };
                 } while (sr.Peek() >= 0);
 
             }
@@ -333,8 +350,7 @@ namespace DxClusterClient
                         this.Text += " connected to " + host + ":" + port.ToString();
                     }
 
-                } else
-                    Close();
+                } 
             }
 
         }
@@ -406,6 +422,11 @@ namespace DxClusterClient
         {
             if (e.KeyCode == Keys.Enter)
                 sendCmd();
+        }
+
+        private void dXCCToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new FDXCC( adifData ).Show();
         }
     }
 }

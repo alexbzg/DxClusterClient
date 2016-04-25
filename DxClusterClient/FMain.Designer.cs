@@ -42,6 +42,8 @@
             this.bSendCmd = new System.Windows.Forms.Button();
             this.tbCmd = new System.Windows.Forms.TextBox();
             this.tbCluster = new System.Windows.Forms.TextBox();
+            this.dXCCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -51,10 +53,12 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dXCCToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
-            this.menuStrip1.Size = new System.Drawing.Size(1078, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1078, 25);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -138,7 +142,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 25);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -151,8 +155,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.dgvDxData);
-            this.splitContainer1.Size = new System.Drawing.Size(1078, 626);
-            this.splitContainer1.SplitterDistance = 313;
+            this.splitContainer1.Size = new System.Drawing.Size(1078, 625);
+            this.splitContainer1.SplitterDistance = 312;
             this.splitContainer1.TabIndex = 3;
             // 
             // bSendCmd
@@ -169,7 +173,7 @@
             // 
             this.tbCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCmd.Location = new System.Drawing.Point(0, 284);
+            this.tbCmd.Location = new System.Drawing.Point(0, 283);
             this.tbCmd.Name = "tbCmd";
             this.tbCmd.Size = new System.Drawing.Size(953, 26);
             this.tbCmd.TabIndex = 1;
@@ -185,8 +189,15 @@
             this.tbCluster.Name = "tbCluster";
             this.tbCluster.ReadOnly = true;
             this.tbCluster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbCluster.Size = new System.Drawing.Size(1075, 279);
+            this.tbCluster.Size = new System.Drawing.Size(1075, 278);
             this.tbCluster.TabIndex = 0;
+            // 
+            // dXCCToolStripMenuItem
+            // 
+            this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";
+            this.dXCCToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
+            this.dXCCToolStripMenuItem.Text = "DXCC";
+            this.dXCCToolStripMenuItem.Click += new System.EventHandler(this.dXCCToolStripMenuItem_Click);
             // 
             // FMain
             // 
@@ -202,6 +213,8 @@
             this.Name = "FMain";
             this.Text = "DxClusterClient";
             this.Load += new System.EventHandler(this.FMain_Load);
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).EndInit();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -229,6 +242,7 @@
         private System.Windows.Forms.TextBox tbCmd;
         private System.Windows.Forms.TextBox tbCluster;
         private System.Windows.Forms.Button bSendCmd;
+        private System.Windows.Forms.ToolStripMenuItem dXCCToolStripMenuItem;
     }
 }
 

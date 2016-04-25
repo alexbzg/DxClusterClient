@@ -59,8 +59,17 @@
       <DependentUpon>FLogin.cs</DependentUpon>
     </Compile>
     <Compile Include="AsyncSocket.cs" />
+    <Compile Include="FDXCC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FDXCC.Designer.cs">
+      <DependentUpon>FDXCC.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FDXCC.resx">
+      <DependentUpon>FDXCC.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FMain.resx">
       <DependentUpon>FMain.cs</DependentUpon>
     </EmbeddedResource>
