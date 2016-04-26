@@ -229,7 +229,9 @@ namespace DxClusterClient
         {
             adifData = new ADIFData();
             bool eoh = false;
+            string errorsFP = Path.GetDirectoryName(adifFP) + "\\AdifErrors.txt";
             using (StreamReader sr = new StreamReader(adifFP))
+            using (StreamWriter errorsSW = new StreamWriter(errorsFP))
             {
                 do
                 {
@@ -247,9 +249,12 @@ namespace DxClusterClient
                     string pfx = "";
                     if (countryCodes.ContainsKey(dxcc))
                         pfx = countryCodes[dxcc];
-                    else
-                        continue;
                     string band = getADIFField(line, "BAND");
+                    if (band == "" || dxcc == "" || pfx == "")
+                    {
+                        errorsSW.WriteLine(line);
+                        continue;
+                    }
                     bool qsl = getADIFField(line, "QSL_RCVD").Equals("Y");
                     bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
                     ADIFHeader adifH = new ADIFHeader { prefix = pfx, band = band, mode = mode };
