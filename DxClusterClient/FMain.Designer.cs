@@ -29,11 +29,23 @@
         private void InitializeComponent()
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.dXCCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSelect = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSelectPrefix = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSelectBand = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSelectMode = new System.Windows.Forms.ToolStripMenuItem();
+            this.miConfirm = new System.Windows.Forms.ToolStripMenuItem();
+            this.miConfirmQSL = new System.Windows.Forms.ToolStripMenuItem();
+            this.miConfirmEQSL = new System.Windows.Forms.ToolStripMenuItem();
+            this.miConfirmLOTW = new System.Windows.Forms.ToolStripMenuItem();
+            this.miOpenDXCC = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvDxData = new System.Windows.Forms.DataGridView();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.freq = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cs = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.band = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.freq = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.prefix = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.text = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -42,7 +54,7 @@
             this.bSendCmd = new System.Windows.Forms.Button();
             this.tbCmd = new System.Windows.Forms.TextBox();
             this.tbCluster = new System.Windows.Forms.TextBox();
-            this.dXCCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -62,15 +74,116 @@
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
+            // dXCCToolStripMenuItem
+            // 
+            this.dXCCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miLoadADIF,
+            this.miSelect,
+            this.miConfirm,
+            this.miOpenDXCC});
+            this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";
+            this.dXCCToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
+            this.dXCCToolStripMenuItem.Text = "DXCC";
+            // 
+            // miLoadADIF
+            // 
+            this.miLoadADIF.Name = "miLoadADIF";
+            this.miLoadADIF.Size = new System.Drawing.Size(145, 22);
+            this.miLoadADIF.Text = "Load ADIF";
+            this.miLoadADIF.Click += new System.EventHandler(this.miLoadADIF_Click);
+            // 
+            // miSelect
+            // 
+            this.miSelect.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miSelectPrefix,
+            this.miSelectBand,
+            this.miSelectMode});
+            this.miSelect.Name = "miSelect";
+            this.miSelect.Size = new System.Drawing.Size(145, 22);
+            this.miSelect.Text = "Select";
+            // 
+            // miSelectPrefix
+            // 
+            this.miSelectPrefix.Checked = true;
+            this.miSelectPrefix.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miSelectPrefix.Name = "miSelectPrefix";
+            this.miSelectPrefix.Size = new System.Drawing.Size(105, 22);
+            this.miSelectPrefix.Text = "Prefix";
+            this.miSelectPrefix.Click += new System.EventHandler(this.miSelectPrefix_Click);
+            // 
+            // miSelectBand
+            // 
+            this.miSelectBand.Name = "miSelectBand";
+            this.miSelectBand.Size = new System.Drawing.Size(105, 22);
+            this.miSelectBand.Text = "Band";
+            this.miSelectBand.Click += new System.EventHandler(this.miSelectPrefix_Click);
+            // 
+            // miSelectMode
+            // 
+            this.miSelectMode.Name = "miSelectMode";
+            this.miSelectMode.Size = new System.Drawing.Size(105, 22);
+            this.miSelectMode.Text = "Mode";
+            this.miSelectMode.Click += new System.EventHandler(this.miSelectPrefix_Click);
+            // 
+            // miConfirm
+            // 
+            this.miConfirm.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miConfirmQSL,
+            this.miConfirmEQSL,
+            this.miConfirmLOTW});
+            this.miConfirm.Name = "miConfirm";
+            this.miConfirm.Size = new System.Drawing.Size(145, 22);
+            this.miConfirm.Text = "Confirmation";
+            // 
+            // miConfirmQSL
+            // 
+            this.miConfirmQSL.Checked = true;
+            this.miConfirmQSL.CheckOnClick = true;
+            this.miConfirmQSL.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miConfirmQSL.Name = "miConfirmQSL";
+            this.miConfirmQSL.Size = new System.Drawing.Size(106, 22);
+            this.miConfirmQSL.Text = "Paper";
+            this.miConfirmQSL.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            // 
+            // miConfirmEQSL
+            // 
+            this.miConfirmEQSL.Checked = true;
+            this.miConfirmEQSL.CheckOnClick = true;
+            this.miConfirmEQSL.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miConfirmEQSL.Name = "miConfirmEQSL";
+            this.miConfirmEQSL.Size = new System.Drawing.Size(106, 22);
+            this.miConfirmEQSL.Text = "eQSL";
+            this.miConfirmEQSL.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            // 
+            // miConfirmLOTW
+            // 
+            this.miConfirmLOTW.Checked = true;
+            this.miConfirmLOTW.CheckOnClick = true;
+            this.miConfirmLOTW.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miConfirmLOTW.Name = "miConfirmLOTW";
+            this.miConfirmLOTW.Size = new System.Drawing.Size(106, 22);
+            this.miConfirmLOTW.Text = "LOTW";
+            this.miConfirmLOTW.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            // 
+            // miOpenDXCC
+            // 
+            this.miOpenDXCC.Enabled = false;
+            this.miOpenDXCC.Name = "miOpenDXCC";
+            this.miOpenDXCC.Size = new System.Drawing.Size(145, 22);
+            this.miOpenDXCC.Text = "Open table";
+            this.miOpenDXCC.Click += new System.EventHandler(this.miOpenDXCC_Click);
+            // 
             // dgvDxData
             // 
+            this.dgvDxData.AccessibleRole = System.Windows.Forms.AccessibleRole.ScrollBar;
             this.dgvDxData.AllowUserToAddRows = false;
             this.dgvDxData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDxData.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.de,
-            this.freq,
-            this.mode,
             this.cs,
+            this.mode,
+            this.band,
+            this.freq,
             this.prefix,
             this.text,
             this.time});
@@ -80,46 +193,54 @@
             this.dgvDxData.ReadOnly = true;
             this.dgvDxData.Size = new System.Drawing.Size(1078, 309);
             this.dgvDxData.TabIndex = 1;
+            this.dgvDxData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvDxData_CellFormatting);
             // 
             // de
             // 
             this.de.DataPropertyName = "de";
-            this.de.HeaderText = "de";
+            this.de.HeaderText = "SPOTTER";
             this.de.Name = "de";
             this.de.ReadOnly = true;
-            // 
-            // freq
-            // 
-            this.freq.DataPropertyName = "freq";
-            this.freq.HeaderText = "freq";
-            this.freq.Name = "freq";
-            this.freq.ReadOnly = true;
-            // 
-            // mode
-            // 
-            this.mode.DataPropertyName = "mode";
-            this.mode.HeaderText = "mode";
-            this.mode.Name = "mode";
-            this.mode.ReadOnly = true;
             // 
             // cs
             // 
             this.cs.DataPropertyName = "cs";
-            this.cs.HeaderText = "cs";
+            this.cs.HeaderText = "CALLSIGN";
             this.cs.Name = "cs";
             this.cs.ReadOnly = true;
+            // 
+            // mode
+            // 
+            this.mode.DataPropertyName = "mode";
+            this.mode.HeaderText = "MODE";
+            this.mode.Name = "mode";
+            this.mode.ReadOnly = true;
+            // 
+            // band
+            // 
+            this.band.DataPropertyName = "band";
+            this.band.HeaderText = "BAND";
+            this.band.Name = "band";
+            this.band.ReadOnly = true;
+            // 
+            // freq
+            // 
+            this.freq.DataPropertyName = "freq";
+            this.freq.HeaderText = "FREQ";
+            this.freq.Name = "freq";
+            this.freq.ReadOnly = true;
             // 
             // prefix
             // 
             this.prefix.DataPropertyName = "prefix";
-            this.prefix.HeaderText = "prefix";
+            this.prefix.HeaderText = "DXCC";
             this.prefix.Name = "prefix";
             this.prefix.ReadOnly = true;
             // 
             // text
             // 
             this.text.DataPropertyName = "text";
-            this.text.HeaderText = "text";
+            this.text.HeaderText = "TEXT";
             this.text.Name = "text";
             this.text.ReadOnly = true;
             this.text.Width = 300;
@@ -127,7 +248,7 @@
             // time
             // 
             this.time.DataPropertyName = "time";
-            this.time.HeaderText = "time";
+            this.time.HeaderText = "TIME";
             this.time.Name = "time";
             this.time.ReadOnly = true;
             // 
@@ -192,13 +313,6 @@
             this.tbCluster.Size = new System.Drawing.Size(1075, 278);
             this.tbCluster.TabIndex = 0;
             // 
-            // dXCCToolStripMenuItem
-            // 
-            this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";
-            this.dXCCToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
-            this.dXCCToolStripMenuItem.Text = "DXCC";
-            this.dXCCToolStripMenuItem.Click += new System.EventHandler(this.dXCCToolStripMenuItem_Click);
-            // 
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -230,19 +344,31 @@
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.DataGridView dgvDxData;
-        private System.Windows.Forms.DataGridViewTextBoxColumn de;
-        private System.Windows.Forms.DataGridViewTextBoxColumn freq;
-        private System.Windows.Forms.DataGridViewTextBoxColumn mode;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cs;
-        private System.Windows.Forms.DataGridViewTextBoxColumn prefix;
-        private System.Windows.Forms.DataGridViewTextBoxColumn text;
-        private System.Windows.Forms.DataGridViewTextBoxColumn time;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox tbCmd;
         private System.Windows.Forms.TextBox tbCluster;
         private System.Windows.Forms.Button bSendCmd;
         private System.Windows.Forms.ToolStripMenuItem dXCCToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miLoadADIF;
+        private System.Windows.Forms.ToolStripMenuItem miSelect;
+        private System.Windows.Forms.ToolStripMenuItem miSelectPrefix;
+        private System.Windows.Forms.ToolStripMenuItem miSelectBand;
+        private System.Windows.Forms.ToolStripMenuItem miSelectMode;
+        private System.Windows.Forms.ToolStripMenuItem miConfirm;
+        private System.Windows.Forms.ToolStripMenuItem miConfirmQSL;
+        private System.Windows.Forms.ToolStripMenuItem miConfirmEQSL;
+        private System.Windows.Forms.ToolStripMenuItem miConfirmLOTW;
+        private System.Windows.Forms.ToolStripMenuItem miOpenDXCC;
+        private System.Windows.Forms.OpenFileDialog ofDialog;
+        private System.Windows.Forms.DataGridViewTextBoxColumn de;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cs;
+        private System.Windows.Forms.DataGridViewTextBoxColumn mode;
+        private System.Windows.Forms.DataGridViewTextBoxColumn band;
+        private System.Windows.Forms.DataGridViewTextBoxColumn freq;
+        private System.Windows.Forms.DataGridViewTextBoxColumn prefix;
+        private System.Windows.Forms.DataGridViewTextBoxColumn text;
+        private System.Windows.Forms.DataGridViewTextBoxColumn time;
     }
 }
 

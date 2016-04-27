@@ -16,12 +16,32 @@ namespace DxClusterClient
 {
     public partial class FMain : Form
     {
-        class Mode
+
+        public class Diap
         {
             public Double l;
             public Double h;
             public string name;
         }
+
+        public static List<Diap> Bands = new List<Diap> {
+                new Diap { name = "2190M", l = 136, h = 137 },
+                new Diap { name = "630M", l = 472, h = 479 },
+                new Diap { name = "560M", l = 501, h = 504 },
+                new Diap { name = "160M", l = 1800, h = 2000 },
+                new Diap { name = "80M", l = 3500, h = 4000 },
+                new Diap { name = "60M", l = 5102, h = 5406.5 },
+                new Diap { name = "40M", l = 7000, h = 7300 },
+                new Diap { name = "30M", l = 10000, h = 10150 },
+                new Diap { name = "20M", l = 14000, h = 14350 },
+                new Diap { name = "17M", l = 18068, h = 18168 },
+                new Diap { name = "15M", l = 21000, h = 21450 },
+                new Diap { name = "12M", l = 24890, h = 24990 },
+                new Diap { name = "10M", l = 28000, h = 29700 },
+                new Diap { name = "6M", l = 50000, h = 54000 },
+                new Diap { name = "4M", l = 70000, h = 71000 },
+                new Diap { name = "2M", l = 144000, h = 148000 }
+        };
 
         class DxItem
         {
@@ -30,6 +50,7 @@ namespace DxClusterClient
             string _prefix;
             string _freq;
             string _mode;
+            string _band;
             string _text;
             string _time;
 
@@ -77,6 +98,16 @@ namespace DxClusterClient
                     _mode = value;
                 }
             }
+
+            public string band
+            {
+                get { return _band; }
+                set
+                {
+                    _band = value;
+                }
+            }
+
 
             public string text
             {
@@ -132,6 +163,7 @@ namespace DxClusterClient
             public bool contact;
             public bool qsl;
             public bool lotw;
+            public bool eqsl;
         }
 
         public class ADIFData : Dictionary<ADIFHeader, ADIFState> { }
@@ -139,12 +171,13 @@ namespace DxClusterClient
         private Dictionary<string, string>[] prefixes =  new Dictionary<string, string>[2] { new Dictionary<string, string>(), new Dictionary<string, string>() };
         private Dictionary<string, string> countryCodes = new Dictionary<string, string>();
         private Regex rgxDX = new Regex(@"DX de (\S+):\s+(\d+\.\d+)\s+(\S+)\s+(.+)\s(\d\d\d\dZ)");
-        private List<Mode> modes = new List<Mode>();
+        private List<Diap> modes = new List<Diap>();
         private BindingList<DxItem> blDxData = new BindingList<DxItem>();
         private BindingSource bsDxData;
         private AppSettings settings = new AppSettings();
         private AsyncConnection clusterCn;
         private ADIFData adifData;
+        private Predicate<ADIFHeader> adifFilter;
         
 
 
@@ -200,7 +233,7 @@ namespace DxClusterClient
                     string line = srM.ReadLine();
                     Match mtchMd = rgxMd.Match(line);
                     if (mtchMd.Success)
-                        modes.Add(new Mode
+                        modes.Add(new Diap
                         {
                             l = Convert.ToDouble(mtchMd.Groups[1].Value.Replace( '.', ',' ) ),
                             h = Convert.ToDouble(mtchMd.Groups[2].Value.Replace( '.', ',' ) ),
@@ -222,7 +255,6 @@ namespace DxClusterClient
 
             }
 
-            loadADIF(Application.StartupPath + "\\fullAdif.adi");
         }
 
         private void loadADIF( string adifFP )
@@ -257,6 +289,7 @@ namespace DxClusterClient
                     }
                     bool qsl = getADIFField(line, "QSL_RCVD").Equals("Y");
                     bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
+                    bool eqsl = getADIFField(line, "EQSL_QSL_RCVD").Equals("Y"); 
                     ADIFHeader adifH = new ADIFHeader { prefix = pfx, band = band, mode = mode };
                     if (adifData.ContainsKey(adifH))
                     {
@@ -268,6 +301,8 @@ namespace DxClusterClient
                 } while (sr.Peek() >= 0);
 
             }
+
+            miOpenDXCC.Enabled = true;
 
         }
 
@@ -378,8 +413,9 @@ namespace DxClusterClient
                         if (prefixes[0].ContainsKey(cs.Substring(0, c)))
                             country = prefixes[0][cs.Substring(0, c)];
                 Double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace('.', ','));
-                string mode = "";
-                foreach ( Mode m in modes )
+                string mode = getDiap( modes, freq );
+                string band = getDiap(Bands, freq);
+                foreach ( Diap m in modes )
                     if ( freq >= m.l && freq <= m.h  )
                     {
                         mode = m.name;
@@ -394,6 +430,7 @@ namespace DxClusterClient
                         de = mtchDX.Groups[1].Value,
                         freq = mtchDX.Groups[2].Value,
                         mode = mode,
+                        band = band,
                         text = mtchDX.Groups[4].Value,
                         time = mtchDX.Groups[5].Value,
                     });
@@ -402,6 +439,20 @@ namespace DxClusterClient
                 });
 
             }
+        }
+
+        public static string getDiap( List<Diap> diaps, double freq )
+        {
+            
+            string r = "";
+            foreach (Diap m in diaps)
+                if (freq >= m.l && freq <= m.h)
+                {
+                    r = m.name;
+                    if (freq < m.h)
+                        break;
+                }
+            return r;
         }
 
         private void FMain_Load(object sender, EventArgs e)
@@ -429,9 +480,71 @@ namespace DxClusterClient
                 sendCmd();
         }
 
-        private void dXCCToolStripMenuItem_Click(object sender, EventArgs e)
+        private void miOpenDXCC_Click(object sender, EventArgs e)
         {
-            new FDXCC( adifData ).Show();
+            new FDXCC(adifData).Show();
+        }
+
+        private void miLoadADIF_Click(object sender, EventArgs e)
+        {
+            if (ofDialog.ShowDialog() == DialogResult.OK)
+                loadADIF(ofDialog.FileName);
+        }
+
+        private void miSelectPrefix_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem miSender = (ToolStripMenuItem)sender;
+            if (!miSender.Checked)
+                foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
+                    mi.Checked = mi.Equals(miSender);
+            dgvDxData.Refresh();                
+        }
+
+        private void miConfirmQSL_CheckedChanged(object sender, EventArgs e)
+        {
+            dgvDxData.Refresh();
+        }
+
+        private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if ( adifData != null && e.RowIndex >= 0 && 
+                (  ( dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix" && miSelectPrefix.Checked ) ||
+                (dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "band" && miSelectBand.Checked) ||
+                (dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "mode" && miSelectMode.Checked) )  ) {
+                DxItem record = blDxData[e.RowIndex];
+                bool contact = false;
+                bool confirm = false;
+                Predicate<ADIFHeader> adifFilter;
+                if (miSelectPrefix.Checked)
+                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                   {
+                       return x.prefix == record.prefix;
+                   });
+                else if ( miSelectBand.Checked )
+                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                    {
+                        return x.prefix == record.prefix && x.band == record.band;
+                    });
+                else
+                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                    {
+                        return x.prefix == record.prefix && x.band == record.band && x.mode == record.mode;
+                    });
+                foreach ( KeyValuePair<ADIFHeader,ADIFState> hs in adifData.Where( x => adifFilter( x.Key ) ))
+                {
+                    if ( !contact )
+                        contact = true;
+                    if ( (hs.Value.qsl && miConfirmQSL.Checked) || (hs.Value.eqsl && miConfirmEQSL.Checked) || (hs.Value.lotw && miConfirmLOTW.Checked) )
+                    {
+                        confirm = true;
+                        break;
+                    }
+                }
+                if (confirm)
+                    e.CellStyle.BackColor = Color.Red;
+                else if (contact)
+                    e.CellStyle.BackColor = Color.Green;
+            }
         }
     }
 }
