@@ -11,6 +11,8 @@ using AsyncConnectionNS;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace DxClusterClient
 {
@@ -135,6 +137,8 @@ namespace DxClusterClient
             public string cs;
             public string host;
             public int port;
+            public string adifFP;
+            public List<int> dgvDXColumnWidth = new List<int>();
         }
 
         public class ADIFHeader
@@ -177,8 +181,7 @@ namespace DxClusterClient
         private AppSettings settings = new AppSettings();
         private AsyncConnection clusterCn;
         private ADIFData adifData;
-        private Predicate<ADIFHeader> adifFilter;
-        
+        private bool loaded = false;
 
 
         public FMain()
@@ -190,6 +193,25 @@ namespace DxClusterClient
             dgvDxData.DataSource = bsDxData;
 
             readConfig();
+
+            if (settings.dgvDXColumnWidth != null && settings.dgvDXColumnWidth.Count == dgvDxData.Columns.Count)
+                for (int c = 0; c < dgvDxData.Columns.Count; c++)
+                    dgvDxData.Columns[c].Width = settings.dgvDXColumnWidth[c];
+            else
+            {
+                settings.dgvDXColumnWidth = new List<int>();
+                for (int c = 0; c < dgvDxData.Columns.Count; c++)
+                    settings.dgvDXColumnWidth.Add( dgvDxData.Columns[c].Width );
+                writeConfig();
+            }
+
+            if (settings.adifFP != "" && File.Exists(settings.adifFP))
+                loadADIF(settings.adifFP);
+
+            Trace.Listeners.Add(new TextWriterTraceListener("DxClusterClient.log"));
+            Trace.AutoFlush = true;
+            Trace.Indent();
+            Trace.WriteLine("Initialising FMain");
 
             using (StreamReader srC = new StreamReader(Application.StartupPath + "\\cty.dat"))
             {
@@ -225,23 +247,33 @@ namespace DxClusterClient
                 } while (srC.Peek() >= 0);
             }
 
-            using (StreamReader srM = new StreamReader(Application.StartupPath + "\\bandMap.txt"))
-            {
-                Regex rgxMd = new Regex(@"^(\d+\.?\d*)\s*-?(\d+\.?\d*)\s+(\S+)$");
-                do
-                {
-                    string line = srM.ReadLine();
-                    Match mtchMd = rgxMd.Match(line);
-                    if (mtchMd.Success)
-                        modes.Add(new Diap
-                        {
-                            l = Convert.ToDouble(mtchMd.Groups[1].Value.Replace( '.', ',' ) ),
-                            h = Convert.ToDouble(mtchMd.Groups[2].Value.Replace( '.', ',' ) ),
-                            name = mtchMd.Groups[3].Value
-                        });
-                } while (srM.Peek() >= 0);
+            Trace.WriteLine("Finished reading cty.dat");
 
+            try
+            {
+                using (StreamReader srM = new StreamReader(Application.StartupPath + "\\bandMap.txt"))
+                {
+                    Regex rgxMd = new Regex(@"^(\d+\.?\d*)\s*-?(\d+\.?\d*)\s+(\S+)$");
+                    do
+                    {
+                        string line = srM.ReadLine();
+                        Match mtchMd = rgxMd.Match(line);
+                        if (mtchMd.Success)
+                            modes.Add(new Diap
+                            {
+                                l = Convert.ToDouble(mtchMd.Groups[1].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)),
+                                h = Convert.ToDouble(mtchMd.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)),
+                                name = mtchMd.Groups[3].Value
+                            });
+                    } while (srM.Peek() >= 0);
+
+                }
+            } catch ( Exception e )
+            {
+                Trace.WriteLine(e.Message);
             }
+
+            Trace.WriteLine("Finished reading bandMap.txt");
 
             using (StreamReader sr = new StreamReader(Application.StartupPath + "\\CountryCode.csv"))
             {
@@ -254,6 +286,9 @@ namespace DxClusterClient
                 } while (sr.Peek() >= 0);
 
             }
+
+            Trace.WriteLine("Finished reading CountryCode.csv");
+            Trace.WriteLine("FMain initialized");
 
         }
 
@@ -295,6 +330,7 @@ namespace DxClusterClient
                     {
                         adifData[adifH].qsl |= qsl;
                         adifData[adifH].lotw |= lotw;
+                        adifData[adifH].eqsl |= eqsl;
                     }
                     else
                         adifData[adifH] = new ADIFState { contact = true, qsl = qsl, lotw = lotw };
@@ -303,6 +339,8 @@ namespace DxClusterClient
             }
 
             miOpenDXCC.Enabled = true;
+            settings.adifFP = adifFP;
+            writeConfig();
 
         }
 
@@ -412,7 +450,7 @@ namespace DxClusterClient
                     for (int c = 1; c <= cs.Length; c++)
                         if (prefixes[0].ContainsKey(cs.Substring(0, c)))
                             country = prefixes[0][cs.Substring(0, c)];
-                Double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace('.', ','));
+                Double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
                 string mode = getDiap( modes, freq );
                 string band = getDiap(Bands, freq);
                 foreach ( Diap m in modes )
@@ -457,6 +495,8 @@ namespace DxClusterClient
 
         private void FMain_Load(object sender, EventArgs e)
         {
+            loaded = true;
+            Trace.WriteLine("FMain loaded");
             login();
         }
 
@@ -508,10 +548,10 @@ namespace DxClusterClient
         private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if ( adifData != null && e.RowIndex >= 0 && 
-                (  ( dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix" && miSelectPrefix.Checked ) ||
-                (dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "band" && miSelectBand.Checked) ||
-                (dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "mode" && miSelectMode.Checked) )  ) {
+                dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
+                if (record.prefix == "")
+                    return;
                 bool contact = false;
                 bool confirm = false;
                 Predicate<ADIFHeader> adifFilter;
@@ -541,9 +581,20 @@ namespace DxClusterClient
                     }
                 }
                 if (confirm)
-                    e.CellStyle.BackColor = Color.Red;
+                    e.CellStyle.BackColor = Color.White;
                 else if (contact)
-                    e.CellStyle.BackColor = Color.Green;
+                    e.CellStyle.BackColor = Color.Blue;
+                else
+                    e.CellStyle.BackColor = Color.Red;
+            }
+        }
+
+        private void dgvDxData_ColumnWidthChanged(object sender, DataGridViewColumnEventArgs e)
+        {
+            if (loaded)
+            {
+                settings.dgvDXColumnWidth[e.Column.Index] = e.Column.Width;
+                writeConfig();
             }
         }
     }

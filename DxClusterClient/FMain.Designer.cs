@@ -194,6 +194,7 @@
             this.dgvDxData.Size = new System.Drawing.Size(1078, 309);
             this.dgvDxData.TabIndex = 1;
             this.dgvDxData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvDxData_CellFormatting);
+            this.dgvDxData.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvDxData_ColumnWidthChanged);
             // 
             // de
             // 
@@ -282,6 +283,7 @@
             // 
             // bSendCmd
             // 
+            this.bSendCmd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.bSendCmd.Location = new System.Drawing.Point(953, 283);
             this.bSendCmd.Name = "bSendCmd";
             this.bSendCmd.Size = new System.Drawing.Size(123, 28);
@@ -305,6 +307,7 @@
             this.tbCluster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCluster.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbCluster.Location = new System.Drawing.Point(0, 3);
             this.tbCluster.Multiline = true;
             this.tbCluster.Name = "tbCluster";
