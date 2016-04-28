@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 
 namespace DxClusterClient
 {
@@ -182,6 +183,7 @@ namespace DxClusterClient
         private AsyncConnection clusterCn;
         private ADIFData adifData;
         private bool loaded = false;
+        private volatile bool closed = false;
 
 
         public FMain()
@@ -460,21 +462,33 @@ namespace DxClusterClient
                         if ( freq < m.h )
                             break;
                     }
-                this.Invoke((MethodInvoker)delegate {
-                    blDxData.Add(new DxItem
-                    {
-                        cs = cs,
-                        prefix = country,
-                        de = mtchDX.Groups[1].Value,
-                        freq = mtchDX.Groups[2].Value,
-                        mode = mode,
-                        band = band,
-                        text = mtchDX.Groups[4].Value,
-                        time = mtchDX.Groups[5].Value,
-                    });
-                    dgvDxData.ClearSelection();
-                    dgvDxData.FirstDisplayedScrollingRowIndex = dgvDxData.RowCount - 1;
-                });
+                try
+                {
+                    if (!closed)
+                    Invoke((MethodInvoker)delegate
+                        {
+                            if (!closed)
+                            {
+                                blDxData.Add(new DxItem
+                                {
+                                    cs = cs,
+                                    prefix = country,
+                                    de = mtchDX.Groups[1].Value,
+                                    freq = mtchDX.Groups[2].Value,
+                                    mode = mode,
+                                    band = band,
+                                    text = mtchDX.Groups[4].Value,
+                                    time = mtchDX.Groups[5].Value,
+                                });
+                                dgvDxData.ClearSelection();
+                                dgvDxData.FirstDisplayedScrollingRowIndex = dgvDxData.RowCount - 1;
+                            }
+                        });
+                } catch (Exception e )
+                {
+                    Debug.WriteLine(e.Message);
+                    Debug.WriteLine( "line recived: " + line );
+                }
 
             }
         }
@@ -509,9 +523,14 @@ namespace DxClusterClient
         {
             if (!tbCmd.Text.Equals(string.Empty))
             {
-                clusterCn.sendCommand(tbCmd.Text);
+                sendCmd(tbCmd.Text);
                 tbCmd.Text = "";
             }
+        }
+
+        private void sendCmd( string cmd )
+        {
+            clusterCn.sendCommand(cmd);
         }
 
         private void tbCmd_KeyDown(object sender, KeyEventArgs e)
@@ -596,6 +615,18 @@ namespace DxClusterClient
                 settings.dgvDXColumnWidth[e.Column.Index] = e.Column.Width;
                 writeConfig();
             }
+        }
+
+        private void FMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            closed = true;
+            if ( clusterCn.connected )
+            {
+                clusterCn.lineReceived -= lineReceived;
+                sendCmd("b");
+                clusterCn.disconnect();
+            }
+            
         }
     }
 }

@@ -166,6 +166,7 @@ namespace AsyncConnectionNS
         private void _disconnect(bool requested)
         {
             System.Diagnostics.Debug.WriteLine("disconnect");
+            receiveDone.Set();
             if (socket != null && socket.Connected)
                 socket.Close();
             currentCmd = null;
@@ -240,14 +241,14 @@ namespace AsyncConnectionNS
                             string ch = Encoding.ASCII.GetString(state.buffer, co++, 1);
                             state.sb.Append( ch );
                             if ( ch.Equals( "\n" ) ) {
-                                System.Diagnostics.Debug.WriteLine("received: " + state.sb.ToString());
+                                //System.Diagnostics.Debug.WriteLine("received: " + state.sb.ToString());
                                 processReply( state.sb.ToString() );
                                 state.sb.Clear();
                             }
                         }
-                        if ( state.sb.Length > 0 )
+                        /*if ( state.sb.Length > 0 )
                             socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                                new AsyncCallback(receiveCallback), state);
+                               new AsyncCallback(receiveCallback), state);*/
                         receiveDone.Set();
                         receive();
                     } else {
@@ -286,15 +287,15 @@ namespace AsyncConnectionNS
 
         private void replyTimeout()
         {
-            System.Diagnostics.Debug.WriteLine( "Reply timeout" );
+            Debug.WriteLine( "Reply timeout" );
             _disconnect(false);
         }
 
-        private void send(String data)
+        private void send(string data)
         {
             if (socket != null && socket.Connected)
             {
-                System.Diagnostics.Debug.WriteLine("sending: " + data);
+                Debug.WriteLine("sending: " + data);
                 // Convert the string data to byte data using ASCII encoding.
                 byte[] byteData = Encoding.ASCII.GetBytes(data);
 
@@ -314,7 +315,7 @@ namespace AsyncConnectionNS
                 result = r;
                 reDone.Set();
             });
-            reDone.WaitOne();
+            reDone.WaitOne(timeout);
             return result;
         }
 
@@ -325,7 +326,7 @@ namespace AsyncConnectionNS
 
                 // Complete sending the data to the remote device.
                 int bytesSent = socket.EndSend(ar);
-                System.Diagnostics.Debug.WriteLine("Sent {0} bytes to server.", bytesSent);
+                Debug.WriteLine("Sent {0} bytes to server.", bytesSent);
 
                 // Signal that all bytes have been sent.
                 sendDone.Set();
