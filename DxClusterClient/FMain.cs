@@ -207,8 +207,6 @@ namespace DxClusterClient
                 writeConfig();
             }
 
-            if (settings.adifFP != "" && File.Exists(settings.adifFP))
-                loadADIF(settings.adifFP);
 
             Trace.Listeners.Add(new TextWriterTraceListener("DxClusterClient.log"));
             Trace.AutoFlush = true;
@@ -277,7 +275,7 @@ namespace DxClusterClient
 
             Trace.WriteLine("Finished reading bandMap.txt");
 
-            using (StreamReader sr = new StreamReader(Application.StartupPath + "\\CountryCode.csv"))
+            using (StreamReader sr = new StreamReader(Application.StartupPath + "\\CountryCode.txt"))
             {
                 do
                 {
@@ -291,6 +289,10 @@ namespace DxClusterClient
 
             Trace.WriteLine("Finished reading CountryCode.csv");
             Trace.WriteLine("FMain initialized");
+
+            if (settings.adifFP != "" && File.Exists(settings.adifFP))
+                loadADIF(settings.adifFP);
+
 
         }
 
@@ -602,9 +604,15 @@ namespace DxClusterClient
                 if (confirm)
                     e.CellStyle.BackColor = Color.White;
                 else if (contact)
-                    e.CellStyle.BackColor = Color.Blue;
+                {
+                    e.CellStyle.BackColor = Color.SteelBlue;
+                    e.CellStyle.ForeColor = Color.White;
+                }
                 else
-                    e.CellStyle.BackColor = Color.Red;
+                {
+                    e.CellStyle.BackColor = Color.Tomato;
+                    e.CellStyle.ForeColor = Color.White;
+                }
             }
         }
 
@@ -620,7 +628,7 @@ namespace DxClusterClient
         private void FMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             closed = true;
-            if ( clusterCn.connected )
+            if ( clusterCn != null && clusterCn.connected )
             {
                 clusterCn.lineReceived -= lineReceived;
                 sendCmd("b");
