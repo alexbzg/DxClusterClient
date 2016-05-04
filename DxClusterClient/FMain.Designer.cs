@@ -30,6 +30,7 @@
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aDIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
             this.dXCCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelect = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectPrefix = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,7 +56,7 @@
             this.tbCmd = new System.Windows.Forms.TextBox();
             this.tbCluster = new System.Windows.Forms.TextBox();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
-            this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
+            this.miBands = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -84,11 +85,19 @@
             this.aDIFToolStripMenuItem.Size = new System.Drawing.Size(44, 19);
             this.aDIFToolStripMenuItem.Text = "ADIF";
             // 
+            // miLoadADIF
+            // 
+            this.miLoadADIF.Name = "miLoadADIF";
+            this.miLoadADIF.Size = new System.Drawing.Size(128, 22);
+            this.miLoadADIF.Text = "Load ADIF";
+            this.miLoadADIF.Click += new System.EventHandler(this.miLoadADIF_Click);
+            // 
             // dXCCToolStripMenuItem
             // 
             this.dXCCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miSelect,
             this.miConfirm,
+            this.miBands,
             this.miOpenDXCC});
             this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";
             this.dXCCToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
@@ -109,21 +118,21 @@
             this.miSelectPrefix.Checked = true;
             this.miSelectPrefix.CheckState = System.Windows.Forms.CheckState.Checked;
             this.miSelectPrefix.Name = "miSelectPrefix";
-            this.miSelectPrefix.Size = new System.Drawing.Size(152, 22);
+            this.miSelectPrefix.Size = new System.Drawing.Size(105, 22);
             this.miSelectPrefix.Text = "Prefix";
             this.miSelectPrefix.Click += new System.EventHandler(this.miSelectPrefix_Click);
             // 
             // miSelectBand
             // 
             this.miSelectBand.Name = "miSelectBand";
-            this.miSelectBand.Size = new System.Drawing.Size(152, 22);
+            this.miSelectBand.Size = new System.Drawing.Size(105, 22);
             this.miSelectBand.Text = "Band";
             this.miSelectBand.Click += new System.EventHandler(this.miSelectPrefix_Click);
             // 
             // miSelectMode
             // 
             this.miSelectMode.Name = "miSelectMode";
-            this.miSelectMode.Size = new System.Drawing.Size(152, 22);
+            this.miSelectMode.Size = new System.Drawing.Size(105, 22);
             this.miSelectMode.Text = "Mode";
             this.miSelectMode.Click += new System.EventHandler(this.miSelectPrefix_Click);
             // 
@@ -145,7 +154,7 @@
             this.miConfirmQSL.Name = "miConfirmQSL";
             this.miConfirmQSL.Size = new System.Drawing.Size(106, 22);
             this.miConfirmQSL.Text = "Paper";
-            this.miConfirmQSL.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            this.miConfirmQSL.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
             // 
             // miConfirmEQSL
             // 
@@ -155,7 +164,7 @@
             this.miConfirmEQSL.Name = "miConfirmEQSL";
             this.miConfirmEQSL.Size = new System.Drawing.Size(106, 22);
             this.miConfirmEQSL.Text = "eQSL";
-            this.miConfirmEQSL.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            this.miConfirmEQSL.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
             // 
             // miConfirmLOTW
             // 
@@ -165,7 +174,7 @@
             this.miConfirmLOTW.Name = "miConfirmLOTW";
             this.miConfirmLOTW.Size = new System.Drawing.Size(106, 22);
             this.miConfirmLOTW.Text = "LOTW";
-            this.miConfirmLOTW.CheckedChanged += new System.EventHandler(this.miConfirmQSL_CheckedChanged);
+            this.miConfirmLOTW.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
             // 
             // miOpenDXCC
             // 
@@ -318,12 +327,11 @@
             this.tbCluster.Size = new System.Drawing.Size(1075, 278);
             this.tbCluster.TabIndex = 0;
             // 
-            // miLoadADIF
+            // miBands
             // 
-            this.miLoadADIF.Name = "miLoadADIF";
-            this.miLoadADIF.Size = new System.Drawing.Size(152, 22);
-            this.miLoadADIF.Text = "Load ADIF";
-            this.miLoadADIF.Click += new System.EventHandler(this.miLoadADIF_Click);
+            this.miBands.Name = "miBands";
+            this.miBands.Size = new System.Drawing.Size(152, 22);
+            this.miBands.Text = "Bands";
             // 
             // FMain
             // 
@@ -383,6 +391,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn time;
         private System.Windows.Forms.ToolStripMenuItem aDIFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miLoadADIF;
+        private System.Windows.Forms.ToolStripMenuItem miBands;
     }
 }
 

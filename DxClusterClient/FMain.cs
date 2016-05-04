@@ -43,7 +43,8 @@ namespace DxClusterClient
                 new Diap { name = "10M", l = 28000, h = 29700 },
                 new Diap { name = "6M", l = 50000, h = 54000 },
                 new Diap { name = "4M", l = 70000, h = 71000 },
-                new Diap { name = "2M", l = 144000, h = 148000 }
+                new Diap { name = "2M", l = 144000, h = 148000 },
+                new Diap { name = "70cm", l = 420000, h = 450000 }
         };
 
         class DxItem
@@ -184,6 +185,7 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
+        private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
 
 
         public FMain()
@@ -293,7 +295,21 @@ namespace DxClusterClient
             if (settings.adifFP != "" && File.Exists(settings.adifFP))
                 loadADIF(settings.adifFP);
 
+            foreach ( Diap band in Bands )
+            {
+                ToolStripMenuItem mi = new ToolStripMenuItem();
+                mi.Text = band.name;
+                mi.Checked = true;
+                mi.CheckOnClick = true;
+                mi.CheckedChanged += miFilterCheckedChanged;
+                miBands.DropDownItems.Add(mi);
+                bandsMenuItems[band.name] = mi;
+            }
+        }
 
+        private void Mi_CheckedChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void loadADIF( string adifFP )
@@ -561,7 +577,7 @@ namespace DxClusterClient
             dgvDxData.Refresh();                
         }
 
-        private void miConfirmQSL_CheckedChanged(object sender, EventArgs e)
+        private void miFilterCheckedChanged(object sender, EventArgs e)
         {
             dgvDxData.Refresh();
         }
@@ -571,7 +587,7 @@ namespace DxClusterClient
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
-                if (record.prefix == "")
+                if (record.prefix == "" || ( !bandsMenuItems.ContainsKey( record.band ) || !bandsMenuItems[record.band].Checked ) )
                     return;
                 bool contact = false;
                 bool confirm = false;
