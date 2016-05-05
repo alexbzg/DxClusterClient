@@ -722,7 +722,8 @@ namespace DxClusterClient
 
         private void miConfirm_DropDownOpening(object sender, EventArgs e)
         {
-            //miBands.DropDown.Close();
+            if ( miBands.DropDown.Visible)
+                miBands.DropDown.Close();
         }
 
         private void miBands_DropDownOpening(object sender, EventArgs e)
