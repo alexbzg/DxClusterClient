@@ -348,6 +348,10 @@ namespace DxClusterClient
                 foreach (ToolStripMenuItem mi in confirmMenuItems.Values)
                     settings.dxccConfirm.Add(mi.Checked);
             }
+
+            co = 0;
+            foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
+                mi.Checked = settings.dxccSelect == co++;
         }
 
         
@@ -613,7 +617,9 @@ namespace DxClusterClient
                 foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
                 {
                     mi.Checked = mi.Equals(miSender);
-                    settings.dxccConfirm[co++] = mi.Checked;
+                    if ( mi.Checked )
+                        settings.dxccSelect = co;
+                    co++;
                 }
                 writeConfig();
                 dgvDxData.Refresh();
@@ -644,9 +650,15 @@ namespace DxClusterClient
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
-                if (record.prefix == "" || ( !bandsMenuItems.ContainsKey( record.band ) || !bandsMenuItems[record.band].Checked ) 
-                    || record.cs.EndsWith( @"/B" ) || record.text.Contains( "NCDXF" ) || record.text.Contains( "BEACON" ) || record.text.Contains( "BCN" ) )
+                if (record.prefix == "" || (!bandsMenuItems.ContainsKey(record.band) || !bandsMenuItems[record.band].Checked)
+                    || record.cs.ToLower().EndsWith(@"/b"))
                     return;
+                else
+                {
+                    string text = record.text.ToLower();
+                    if (text.Contains("ncdxf") || record.text.Contains("beacon") || record.text.Contains("bcn"))
+                        return;
+                }
                 bool contact = false;
                 bool confirm = false;
                 Predicate<ADIFHeader> adifFilter;
