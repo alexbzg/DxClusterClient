@@ -47,6 +47,8 @@ namespace DxClusterClient
                 new Diap { name = "70cm", l = 420000, h = 450000 }
         };
 
+        public static List<string> ConfirmationTypes = new List<string> { "Paper", "eQSL", "LOTW" };
+
         class DxItem
         {
             string _de;
@@ -141,6 +143,9 @@ namespace DxClusterClient
             public int port;
             public string adifFP;
             public List<int> dgvDXColumnWidth = new List<int>();
+            public int dxccSelect;
+            public List<bool> dxccConfirm;
+            public List<bool> dxccBand;
         }
 
         public class ADIFHeader
@@ -167,9 +172,14 @@ namespace DxClusterClient
         public class ADIFState
         {
             public bool contact;
-            public bool qsl;
-            public bool lotw;
-            public bool eqsl;
+            public List<bool> confirmation = new List<bool>();
+
+            public ADIFState()
+            {
+                contact = true;
+                foreach (string ct in ConfirmationTypes)
+                    confirmation.Add(false);
+            }
         }
 
         public class ADIFData : Dictionary<ADIFHeader, ADIFState> { }
@@ -186,7 +196,7 @@ namespace DxClusterClient
         private bool loaded = false;
         private volatile bool closed = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
-
+        private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
 
         public FMain()
         {
@@ -195,6 +205,12 @@ namespace DxClusterClient
 
             dgvDxData.AutoGenerateColumns = false;
             dgvDxData.DataSource = bsDxData;
+
+            miBands.DropDown.AutoClose = false;
+            miBands.DropDown.MouseLeave += miDropdownMouseLeave;
+
+            miConfirm.DropDown.AutoClose = false;
+            miConfirm.DropDown.MouseLeave += miDropdownMouseLeave;
 
             readConfig();
 
@@ -295,15 +311,42 @@ namespace DxClusterClient
             if (settings.adifFP != "" && File.Exists(settings.adifFP))
                 loadADIF(settings.adifFP);
 
+            int co = 0;
             foreach ( Diap band in Bands )
             {
                 ToolStripMenuItem mi = new ToolStripMenuItem();
                 mi.Text = band.name;
-                mi.Checked = true;
+                mi.Checked = settings.dxccBand != null && settings.dxccBand.Count > co ? settings.dxccBand[co] : true;
                 mi.CheckOnClick = true;
                 mi.CheckedChanged += miFilterCheckedChanged;
                 miBands.DropDownItems.Add(mi);
                 bandsMenuItems[band.name] = mi;
+                co++;
+            }
+            if ( settings.dxccBand == null || settings.dxccBand.Count < bandsMenuItems.Count)
+            {
+                settings.dxccBand = new List<bool>();
+                foreach (ToolStripMenuItem mi in bandsMenuItems.Values)
+                    settings.dxccBand.Add(mi.Checked);
+            }
+
+            co = 0;
+            foreach (string ct in ConfirmationTypes)
+            {
+                ToolStripMenuItem mi = new ToolStripMenuItem();
+                mi.Text = ct;
+                mi.Checked = settings.dxccConfirm != null && settings.dxccConfirm.Count > co ? settings.dxccConfirm[co] : true;
+                mi.CheckOnClick = true;
+                mi.CheckedChanged += miFilterCheckedChanged;
+                miConfirm.DropDownItems.Add(mi);
+                confirmMenuItems[ct] = mi;
+                co++;
+            }
+            if (settings.dxccConfirm == null || settings.dxccConfirm.Count < confirmMenuItems.Count)
+            {
+                settings.dxccConfirm = new List<bool>();
+                foreach (ToolStripMenuItem mi in confirmMenuItems.Values)
+                    settings.dxccConfirm.Add(mi.Checked);
             }
         }
 
@@ -346,14 +389,11 @@ namespace DxClusterClient
                     bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
                     bool eqsl = getADIFField(line, "EQSL_QSL_RCVD").Equals("Y"); 
                     ADIFHeader adifH = new ADIFHeader { prefix = pfx, band = band, mode = mode };
-                    if (adifData.ContainsKey(adifH))
-                    {
-                        adifData[adifH].qsl |= qsl;
-                        adifData[adifH].lotw |= lotw;
-                        adifData[adifH].eqsl |= eqsl;
-                    }
-                    else
-                        adifData[adifH] = new ADIFState { contact = true, qsl = qsl, lotw = lotw };
+                    if (!adifData.ContainsKey(adifH))
+                        adifData[adifH] = new ADIFState();
+                    adifData[adifH].confirmation[0] |= qsl;
+                    adifData[adifH].confirmation[1] |= eqsl;
+                    adifData[adifH].confirmation[2] |= lotw;
                 } while (sr.Peek() >= 0);
 
             }
@@ -572,13 +612,34 @@ namespace DxClusterClient
         {
             ToolStripMenuItem miSender = (ToolStripMenuItem)sender;
             if (!miSender.Checked)
+            {
+                int co = 0;
                 foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
+                {
                     mi.Checked = mi.Equals(miSender);
-            dgvDxData.Refresh();                
+                    settings.dxccConfirm[co++] = mi.Checked;
+                }
+                writeConfig();
+                dgvDxData.Refresh();
+            }
         }
 
         private void miFilterCheckedChanged(object sender, EventArgs e)
         {
+            ToolStripMenuItem miSender = (ToolStripMenuItem)sender;
+            if ( miSender.OwnerItem == miConfirm )
+            {
+                string ct = confirmMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
+                int idx = ConfirmationTypes.FindIndex( x => x == ct );
+                settings.dxccConfirm[idx] = miSender.Checked;
+            }
+            else if ( miSender.OwnerItem == miBands )
+            {
+                string band = bandsMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
+                int idx = Bands.FindIndex( x =>  x.name == band);
+                settings.dxccBand[idx] = miSender.Checked;
+            }
+            writeConfig();
             dgvDxData.Refresh();
         }
 
@@ -587,7 +648,8 @@ namespace DxClusterClient
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
-                if (record.prefix == "" || ( !bandsMenuItems.ContainsKey( record.band ) || !bandsMenuItems[record.band].Checked ) )
+                if (record.prefix == "" || ( !bandsMenuItems.ContainsKey( record.band ) || !bandsMenuItems[record.band].Checked ) 
+                    || record.cs.EndsWith( @"/B" ) || record.text.Contains( "NCDXF" ) || record.text.Contains( "BEACON" ) || record.text.Contains( "BCN" ) )
                     return;
                 bool contact = false;
                 bool confirm = false;
@@ -611,11 +673,15 @@ namespace DxClusterClient
                 {
                     if ( !contact )
                         contact = true;
-                    if ( (hs.Value.qsl && miConfirmQSL.Checked) || (hs.Value.eqsl && miConfirmEQSL.Checked) || (hs.Value.lotw && miConfirmLOTW.Checked) )
-                    {
-                        confirm = true;
+                    int co = 0;
+                    foreach ( string ct in ConfirmationTypes )
+                        if ( hs.Value.confirmation[co++] && confirmMenuItems[ct].Checked )
+                        {
+                            confirm = true;
+                            break;
+                        }
+                    if (confirm)
                         break;
-                    }
                 }
                 if (confirm)
                     e.CellStyle.BackColor = Color.White;
@@ -651,6 +717,21 @@ namespace DxClusterClient
                 clusterCn.disconnect();
             }
             
+        }
+
+        private void miDropdownMouseLeave(object sender, EventArgs e)
+        {
+            ((ToolStripDropDown)sender).Close();
+        }
+
+        private void miConfirm_DropDownOpening(object sender, EventArgs e)
+        {
+            miBands.DropDown.Close();
+        }
+
+        private void miBands_DropDownOpening(object sender, EventArgs e)
+        {
+            miConfirm.DropDown.Close();
         }
     }
 }

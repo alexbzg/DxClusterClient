@@ -71,9 +71,6 @@
             this.clbConfirmation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.clbConfirmation.CheckOnClick = true;
             this.clbConfirmation.FormattingEnabled = true;
-            this.clbConfirmation.Items.AddRange(new object[] {
-            "QSL",
-            "LOTW"});
             this.clbConfirmation.Location = new System.Drawing.Point(1359, 31);
             this.clbConfirmation.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.clbConfirmation.Name = "clbConfirmation";

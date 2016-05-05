@@ -1,4 +1,7 @@
-﻿namespace DxClusterClient
+﻿using System;
+using System.Windows.Forms;
+
+namespace DxClusterClient
 {
     partial class FMain
     {
@@ -37,9 +40,7 @@
             this.miSelectBand = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectMode = new System.Windows.Forms.ToolStripMenuItem();
             this.miConfirm = new System.Windows.Forms.ToolStripMenuItem();
-            this.miConfirmQSL = new System.Windows.Forms.ToolStripMenuItem();
-            this.miConfirmEQSL = new System.Windows.Forms.ToolStripMenuItem();
-            this.miConfirmLOTW = new System.Windows.Forms.ToolStripMenuItem();
+            this.miBands = new System.Windows.Forms.ToolStripMenuItem();
             this.miOpenDXCC = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvDxData = new System.Windows.Forms.DataGridView();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -56,7 +57,6 @@
             this.tbCmd = new System.Windows.Forms.TextBox();
             this.tbCluster = new System.Windows.Forms.TextBox();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
-            this.miBands = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -138,43 +138,17 @@
             // 
             // miConfirm
             // 
-            this.miConfirm.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miConfirmQSL,
-            this.miConfirmEQSL,
-            this.miConfirmLOTW});
             this.miConfirm.Name = "miConfirm";
             this.miConfirm.Size = new System.Drawing.Size(152, 22);
             this.miConfirm.Text = "Confirmation";
+            this.miConfirm.DropDownOpening += new System.EventHandler(this.miConfirm_DropDownOpening);
             // 
-            // miConfirmQSL
+            // miBands
             // 
-            this.miConfirmQSL.Checked = true;
-            this.miConfirmQSL.CheckOnClick = true;
-            this.miConfirmQSL.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.miConfirmQSL.Name = "miConfirmQSL";
-            this.miConfirmQSL.Size = new System.Drawing.Size(106, 22);
-            this.miConfirmQSL.Text = "Paper";
-            this.miConfirmQSL.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
-            // 
-            // miConfirmEQSL
-            // 
-            this.miConfirmEQSL.Checked = true;
-            this.miConfirmEQSL.CheckOnClick = true;
-            this.miConfirmEQSL.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.miConfirmEQSL.Name = "miConfirmEQSL";
-            this.miConfirmEQSL.Size = new System.Drawing.Size(106, 22);
-            this.miConfirmEQSL.Text = "eQSL";
-            this.miConfirmEQSL.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
-            // 
-            // miConfirmLOTW
-            // 
-            this.miConfirmLOTW.Checked = true;
-            this.miConfirmLOTW.CheckOnClick = true;
-            this.miConfirmLOTW.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.miConfirmLOTW.Name = "miConfirmLOTW";
-            this.miConfirmLOTW.Size = new System.Drawing.Size(106, 22);
-            this.miConfirmLOTW.Text = "LOTW";
-            this.miConfirmLOTW.CheckedChanged += new System.EventHandler(this.miFilterCheckedChanged);
+            this.miBands.Name = "miBands";
+            this.miBands.Size = new System.Drawing.Size(152, 22);
+            this.miBands.Text = "Bands";
+            this.miBands.DropDownOpening += new System.EventHandler(this.miBands_DropDownOpening);
             // 
             // miOpenDXCC
             // 
@@ -327,12 +301,6 @@
             this.tbCluster.Size = new System.Drawing.Size(1075, 278);
             this.tbCluster.TabIndex = 0;
             // 
-            // miBands
-            // 
-            this.miBands.Name = "miBands";
-            this.miBands.Size = new System.Drawing.Size(152, 22);
-            this.miBands.Text = "Bands";
-            // 
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -361,6 +329,8 @@
 
         }
 
+        
+
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
@@ -376,9 +346,6 @@
         private System.Windows.Forms.ToolStripMenuItem miSelectBand;
         private System.Windows.Forms.ToolStripMenuItem miSelectMode;
         private System.Windows.Forms.ToolStripMenuItem miConfirm;
-        private System.Windows.Forms.ToolStripMenuItem miConfirmQSL;
-        private System.Windows.Forms.ToolStripMenuItem miConfirmEQSL;
-        private System.Windows.Forms.ToolStripMenuItem miConfirmLOTW;
         private System.Windows.Forms.ToolStripMenuItem miOpenDXCC;
         private System.Windows.Forms.OpenFileDialog ofDialog;
         private System.Windows.Forms.DataGridViewTextBoxColumn de;

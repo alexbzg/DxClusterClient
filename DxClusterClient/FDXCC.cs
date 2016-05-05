@@ -39,8 +39,6 @@ namespace DxClusterClient
         public FDXCC( ADIFData adifData )
         {
             InitializeComponent();
-            clbConfirmation.SetItemCheckState(0, CheckState.Checked);
-            clbConfirmation.SetItemCheckState(1, CheckState.Checked);
             List<string> countries = new List<string>();
             List<string> bands = new List<string>();
             List<string> modes = new List<string>();
@@ -57,6 +55,8 @@ namespace DxClusterClient
             modes.Sort();
             foreach (string mode in modes)
                 clbModes.Items.Add(mode, true);
+            foreach (string ct in ConfirmationTypes)
+                clbConfirmation.Items.Add(ct, true);
             
 
 
@@ -116,14 +116,18 @@ namespace DxClusterClient
             {
                 bool contact = false;
                 bool confirm = false;
-                bool lotw = clbConfirmation.CheckedItems.Contains("LOTW");
-                bool qsl = clbConfirmation.CheckedItems.Contains("QSL");
                 Dictionary<string, ADIFState> data = (Dictionary<string, ADIFState>)e.Value;
                 foreach (KeyValuePair<string, ADIFState> kv in data)
                     if (clbModes.CheckedItems.Contains(kv.Key))
                     {
                         contact |= kv.Value.contact;
-                        confirm |= (kv.Value.lotw && lotw) || (kv.Value.qsl && qsl);
+                        int co = 0;
+                        foreach ( string ct in ConfirmationTypes )
+                            if ( kv.Value.confirmation[co++] && clbConfirmation.CheckedItems.Contains(ct))
+                            {
+                                confirm = true;
+                                break;
+                            }
                         if (confirm)
                             break;
                     }
