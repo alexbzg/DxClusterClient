@@ -350,11 +350,7 @@ namespace DxClusterClient
             }
         }
 
-        private void Mi_CheckedChanged(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         private void loadADIF( string adifFP )
         {
             adifData = new ADIFData();
@@ -726,12 +722,14 @@ namespace DxClusterClient
 
         private void miConfirm_DropDownOpening(object sender, EventArgs e)
         {
-            miBands.DropDown.Close();
+            //miBands.DropDown.Close();
         }
 
         private void miBands_DropDownOpening(object sender, EventArgs e)
         {
-            miConfirm.DropDown.Close();
+            if (miConfirm.DropDown.Visible)
+                miConfirm.DropDown.Close();
+            //miConfirm.DropDown.Close();
         }
     }
 }
