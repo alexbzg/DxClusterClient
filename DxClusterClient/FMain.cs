@@ -47,6 +47,31 @@ namespace DxClusterClient
                 new Diap { name = "70cm", l = 420000, h = 450000 }
         };
 
+        public class Mode
+        {
+            public string name;
+            public List<string> aliases;
+            public List<Mode> subItems;
+        }
+
+        public static List<Mode> ModesList = new List<Mode> {
+            new Mode { name = "CW" },
+            new Mode { name = "FONE",
+                aliases = new List<string> { "USB", "LSB", "AM", "FM" }
+            },
+            new Mode { name = "DIGI",
+                subItems = new List<Mode>
+                {
+                    new Mode { name = "RTTY" },
+                    new Mode { name = "PSK" },
+                    new Mode { name = "JT65" },
+                    new Mode { name = "FSK" },
+                    new Mode { name = "OLIVIA" },
+                    new Mode { name = "SSTV" }
+                }
+            }
+        };
+
         public static List<string> ConfirmationTypes = new List<string> { "Paper", "eQSL", "LOTW" };
 
         class DxItem
@@ -146,6 +171,7 @@ namespace DxClusterClient
             public int dxccSelect;
             public List<bool> dxccConfirm;
             public List<bool> dxccBand;
+            public List<KeyValuePair<string,bool>> dxccModes;
         }
 
         public class ADIFHeader
@@ -197,6 +223,7 @@ namespace DxClusterClient
         private volatile bool closed = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
+        private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
 
         public FMain()
         {
@@ -213,6 +240,8 @@ namespace DxClusterClient
             miConfirm.DropDown.MouseLeave += miDropdownMouseLeave;
 
             readConfig();
+            if (settings.dxccModes == null)
+                settings.dxccModes = new List<KeyValuePair<string, bool>>();
 
             if (settings.dgvDXColumnWidth != null && settings.dgvDXColumnWidth.Count == dgvDxData.Columns.Count)
                 for (int c = 0; c < dgvDxData.Columns.Count; c++)
@@ -352,6 +381,29 @@ namespace DxClusterClient
             co = 0;
             foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
                 mi.Checked = settings.dxccSelect == co++;
+
+            foreach (Mode mode in ModesList)
+                createModeMenuItem(mode, null);
+        }
+
+        private void createModeMenuItem( Mode mode, Mode parent)
+        {
+            ToolStripMenuItem mi = new ToolStripMenuItem();
+            mi.Text = mode.name;
+            mi.Checked = true;
+            if ( settings.dxccModes.Exists( x => x.Key == mode.name ) )
+                mi.Checked = settings.dxccModes.FirstOrDefault( x => x.Key == mode.name ).Value;
+            mi.CheckOnClick = true;
+            mi.CheckedChanged += miFilterCheckedChanged;
+            ToolStripMenuItem parentMI = parent == null ? miModes : modesMenuItems[parent.name];
+            parentMI.DropDownItems.Add(mi);
+            modesMenuItems[mode.name] = mi;
+            if (mode.aliases != null)
+                foreach (string alias in mode.aliases)
+                    modesMenuItems[alias] = mi;
+            if (mode.subItems != null)
+                foreach (Mode subItem in mode.subItems)
+                    createModeMenuItem(subItem, mode);
         }
 
         
@@ -493,6 +545,24 @@ namespace DxClusterClient
 
         }
 
+        private string testMode( string text, Mode mode )
+        {
+            if (text.Contains(mode.name))
+                return mode.name;
+            if (mode.aliases != null)
+                foreach (string alias in mode.aliases)
+                    if (text.Contains(alias))
+                        return mode.name;
+            if ( mode.subItems != null )
+                foreach ( Mode subItem in mode.subItems )
+                {
+                    string r = testMode(text, subItem);
+                    if (r != "")
+                        return r;
+                }
+            return "";
+        }
+
         private void lineReceived( object obj, LineReceivedEventArgs ea )
         {
             string line = ea.line.TrimEnd('\r', '\n');
@@ -511,15 +581,17 @@ namespace DxClusterClient
                         if (prefixes[0].ContainsKey(cs.Substring(0, c)))
                             country = prefixes[0][cs.Substring(0, c)];
                 Double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
-                string mode = getDiap( modes, freq );
+                string mode = "";
+                string textU = mtchDX.Groups[4].Value.ToUpper();
+                foreach ( Mode modeI in ModesList)
+                {
+                    mode = testMode(textU, modeI);
+                    if (mode != "")
+                        break;
+                }
+                if ( mode == "" )
+                    mode = getDiap( modes, freq );
                 string band = getDiap(Bands, freq);
-                foreach ( Diap m in modes )
-                    if ( freq >= m.l && freq <= m.h  )
-                    {
-                        mode = m.name;
-                        if ( freq < m.h )
-                            break;
-                    }
                 try
                 {
                     if (!closed)
@@ -641,6 +713,12 @@ namespace DxClusterClient
                 int idx = Bands.FindIndex( x =>  x.name == band);
                 settings.dxccBand[idx] = miSender.Checked;
             }
+            else if ( modesMenuItems.ContainsValue( miSender ) )
+            {
+                if ( settings.dxccModes.Exists( x => x.Key == miSender.Text ) )
+                    settings.dxccModes.RemoveAll( x => x.Key == miSender.Text );
+                settings.dxccModes.Add( new KeyValuePair<string, bool>( miSender.Text, miSender.Checked ));
+            }
             writeConfig();
             dgvDxData.Refresh();
         }
@@ -742,7 +820,14 @@ namespace DxClusterClient
         {
             if (miConfirm.DropDown.Visible)
                 miConfirm.DropDown.Close();
-            //miConfirm.DropDown.Close();
+            if (miModes.DropDown.Visible)
+                miModes.DropDown.Close();
+        }
+
+        private void miModes_DropDownOpening(object sender, EventArgs e)
+        {
+            if (miBands.DropDown.Visible)
+                miBands.DropDown.Close();
         }
     }
 }

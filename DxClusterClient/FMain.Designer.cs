@@ -57,6 +57,7 @@ namespace DxClusterClient
             this.tbCmd = new System.Windows.Forms.TextBox();
             this.tbCluster = new System.Windows.Forms.TextBox();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
+            this.miModes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -98,6 +99,7 @@ namespace DxClusterClient
             this.miSelect,
             this.miConfirm,
             this.miBands,
+            this.miModes,
             this.miOpenDXCC});
             this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";
             this.dXCCToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
@@ -301,6 +303,13 @@ namespace DxClusterClient
             this.tbCluster.Size = new System.Drawing.Size(1075, 278);
             this.tbCluster.TabIndex = 0;
             // 
+            // miModes
+            // 
+            this.miModes.Name = "miModes";
+            this.miModes.Size = new System.Drawing.Size(152, 22);
+            this.miModes.Text = "Modes";
+            this.miModes.DropDownOpening += new System.EventHandler(this.miModes_DropDownOpening);
+            // 
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -359,6 +368,7 @@ namespace DxClusterClient
         private System.Windows.Forms.ToolStripMenuItem aDIFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miLoadADIF;
         private System.Windows.Forms.ToolStripMenuItem miBands;
+        private ToolStripMenuItem miModes;
     }
 }
 
