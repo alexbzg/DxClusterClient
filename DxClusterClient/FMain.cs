@@ -161,6 +161,12 @@ namespace DxClusterClient
 
         }
 
+        public class DXCCModeSettings
+        {
+            public string modeName;
+            public bool enabled;
+        }
+
         public class AppSettings
         {
             public string cs;
@@ -171,7 +177,7 @@ namespace DxClusterClient
             public int dxccSelect;
             public List<bool> dxccConfirm;
             public List<bool> dxccBand;
-            public List<KeyValuePair<string,bool>> dxccModes;
+            public List<DXCCModeSettings> dxccModes;
         }
 
         public class ADIFHeader
@@ -221,6 +227,7 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
+        private volatile bool dxccModeMenuProcessing = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
@@ -239,9 +246,12 @@ namespace DxClusterClient
             miConfirm.DropDown.AutoClose = false;
             miConfirm.DropDown.MouseLeave += miDropdownMouseLeave;
 
+            miModes.DropDown.AutoClose = false;
+            miModes.DropDown.MouseLeave += miDropdownMouseLeave;
+
             readConfig();
             if (settings.dxccModes == null)
-                settings.dxccModes = new List<KeyValuePair<string, bool>>();
+                settings.dxccModes = new List<DXCCModeSettings>();
 
             if (settings.dgvDXColumnWidth != null && settings.dgvDXColumnWidth.Count == dgvDxData.Columns.Count)
                 for (int c = 0; c < dgvDxData.Columns.Count; c++)
@@ -391,8 +401,8 @@ namespace DxClusterClient
             ToolStripMenuItem mi = new ToolStripMenuItem();
             mi.Text = mode.name;
             mi.Checked = true;
-            if ( settings.dxccModes.Exists( x => x.Key == mode.name ) )
-                mi.Checked = settings.dxccModes.FirstOrDefault( x => x.Key == mode.name ).Value;
+            if ( settings.dxccModes.Exists( x => x.modeName == mode.name ) )
+                mi.Checked = settings.dxccModes.FirstOrDefault( x => x.modeName == mode.name ).enabled;
             mi.CheckOnClick = true;
             mi.CheckedChanged += miFilterCheckedChanged;
             ToolStripMenuItem parentMI = parent == null ? miModes : modesMenuItems[parent.name];
@@ -402,11 +412,26 @@ namespace DxClusterClient
                 foreach (string alias in mode.aliases)
                     modesMenuItems[alias] = mi;
             if (mode.subItems != null)
+            {
                 foreach (Mode subItem in mode.subItems)
                     createModeMenuItem(subItem, mode);
+                mi.DropDown.AutoClose = false;
+                mi.DropDown.MouseLeave += miDropdownMouseLeave;
+                mi.DropDownOpening += miDropDownOpening;
+            }
         }
 
-        
+        private void miDropDownOpening(object sender, EventArgs e)
+        {
+            ToolStripMenuItem miSender = (ToolStripMenuItem)sender;
+            ToolStripMenuItem parentMI = (ToolStripMenuItem)miSender.OwnerItem;
+            foreach (ToolStripMenuItem mi in parentMI.DropDownItems)
+                if (mi != miSender && mi.DropDown.Visible)
+                    mi.DropDown.Close();
+        }
+
+
+
         private void loadADIF( string adifFP )
         {
             adifData = new ADIFData();
@@ -715,9 +740,34 @@ namespace DxClusterClient
             }
             else if ( modesMenuItems.ContainsValue( miSender ) )
             {
-                if ( settings.dxccModes.Exists( x => x.Key == miSender.Text ) )
-                    settings.dxccModes.RemoveAll( x => x.Key == miSender.Text );
-                settings.dxccModes.Add( new KeyValuePair<string, bool>( miSender.Text, miSender.Checked ));
+                if ( settings.dxccModes.Exists( x => x.modeName == miSender.Text ) )
+                    settings.dxccModes.RemoveAll( x => x.modeName == miSender.Text );
+                settings.dxccModes.Add(new DXCCModeSettings { modeName = miSender.Text, enabled = miSender.Checked });
+                if (dxccModeMenuProcessing)
+                    return;
+                dxccModeMenuProcessing = true;
+                ToolStripMenuItem miOwner = (ToolStripMenuItem)miSender.OwnerItem;
+                if (miOwner != miModes)
+                {
+                    bool allChecked = true;
+                    bool allUnchecked = true;
+                    foreach (ToolStripMenuItem mi in miOwner.DropDownItems)
+                    {
+                        allChecked |= mi.Checked;
+                        allUnchecked |= !mi.Checked;
+                    }
+                    if (allChecked)
+                        miOwner.Checked = true;
+                    else if (allUnchecked)
+                        miOwner.Checked = false;
+                    else
+                        miOwner.CheckState = CheckState.Indeterminate;
+                }
+
+                foreach (ToolStripMenuItem mi in miSender.DropDownItems)
+                    mi.Checked = miSender.Checked;
+
+                dxccModeMenuProcessing = false;
             }
             writeConfig();
             dgvDxData.Refresh();
@@ -728,8 +778,10 @@ namespace DxClusterClient
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
-                if (record.prefix == "" || (!bandsMenuItems.ContainsKey(record.band) || !bandsMenuItems[record.band].Checked)
-                    || record.cs.ToLower().EndsWith(@"/b"))
+                if (record.prefix == "" || 
+                    (!bandsMenuItems.ContainsKey(record.band) || !bandsMenuItems[record.band].Checked) ||
+                    (!modesMenuItems.ContainsKey(record.mode) || !modesMenuItems[record.mode].Checked) ||
+                    record.cs.ToLower().EndsWith(@"/b"))
                     return;
                 else
                 {
