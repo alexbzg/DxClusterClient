@@ -57,7 +57,7 @@ namespace DxClusterClient
         public static List<Mode> ModesList = new List<Mode> {
             new Mode { name = "CW" },
             new Mode { name = "FONE",
-                aliases = new List<string> { "USB", "LSB", "AM", "FM" }
+                aliases = new List<string> { "USB", "LSB", "AM", "FM", "SSB" }
             },
             new Mode { name = "DIGI",
                 subItems = new List<Mode>
@@ -240,13 +240,13 @@ namespace DxClusterClient
             dgvDxData.AutoGenerateColumns = false;
             dgvDxData.DataSource = bsDxData;
 
-            miBands.DropDown.AutoClose = false;
+            miBands.DropDown.MouseEnter += miDropDownMouseEnter;
             miBands.DropDown.MouseLeave += miDropdownMouseLeave;
 
-            miConfirm.DropDown.AutoClose = false;
+            miConfirm.DropDown.MouseEnter += miDropDownMouseEnter;
             miConfirm.DropDown.MouseLeave += miDropdownMouseLeave;
 
-            miModes.DropDown.AutoClose = false;
+            miModes.DropDown.MouseEnter += miDropDownMouseEnter;
             miModes.DropDown.MouseLeave += miDropdownMouseLeave;
 
             readConfig();
@@ -401,6 +401,7 @@ namespace DxClusterClient
             ToolStripMenuItem mi = new ToolStripMenuItem();
             mi.Text = mode.name;
             mi.Checked = true;
+            mi.Enabled = parent == null || modesMenuItems[parent.name].Checked;
             if ( settings.dxccModes.Exists( x => x.modeName == mode.name ) )
                 mi.Checked = settings.dxccModes.FirstOrDefault( x => x.modeName == mode.name ).enabled;
             mi.CheckOnClick = true;
@@ -415,7 +416,7 @@ namespace DxClusterClient
             {
                 foreach (Mode subItem in mode.subItems)
                     createModeMenuItem(subItem, mode);
-                mi.DropDown.AutoClose = false;
+                mi.DropDown.MouseEnter += miDropDownMouseEnter;
                 mi.DropDown.MouseLeave += miDropdownMouseLeave;
                 mi.DropDownOpening += miDropDownOpening;
             }
@@ -743,31 +744,8 @@ namespace DxClusterClient
                 if ( settings.dxccModes.Exists( x => x.modeName == miSender.Text ) )
                     settings.dxccModes.RemoveAll( x => x.modeName == miSender.Text );
                 settings.dxccModes.Add(new DXCCModeSettings { modeName = miSender.Text, enabled = miSender.Checked });
-                if (dxccModeMenuProcessing)
-                    return;
-                dxccModeMenuProcessing = true;
-                ToolStripMenuItem miOwner = (ToolStripMenuItem)miSender.OwnerItem;
-                if (miOwner != miModes)
-                {
-                    bool allChecked = true;
-                    bool allUnchecked = true;
-                    foreach (ToolStripMenuItem mi in miOwner.DropDownItems)
-                    {
-                        allChecked |= mi.Checked;
-                        allUnchecked |= !mi.Checked;
-                    }
-                    if (allChecked)
-                        miOwner.Checked = true;
-                    else if (allUnchecked)
-                        miOwner.Checked = false;
-                    else
-                        miOwner.CheckState = CheckState.Indeterminate;
-                }
-
                 foreach (ToolStripMenuItem mi in miSender.DropDownItems)
-                    mi.Checked = miSender.Checked;
-
-                dxccModeMenuProcessing = false;
+                    mi.Enabled = miSender.Checked;
             }
             writeConfig();
             dgvDxData.Refresh();
@@ -780,7 +758,7 @@ namespace DxClusterClient
                 DxItem record = blDxData[e.RowIndex];
                 if (record.prefix == "" || 
                     (!bandsMenuItems.ContainsKey(record.band) || !bandsMenuItems[record.band].Checked) ||
-                    (!modesMenuItems.ContainsKey(record.mode) || !modesMenuItems[record.mode].Checked) ||
+                    (!modesMenuItems.ContainsKey(record.mode) || !modesMenuItems[record.mode].Enabled || !modesMenuItems[record.mode].Checked) ||
                     record.cs.ToLower().EndsWith(@"/b"))
                     return;
                 else
@@ -859,7 +837,22 @@ namespace DxClusterClient
 
         private void miDropdownMouseLeave(object sender, EventArgs e)
         {
-            ((ToolStripDropDown)sender).Close();
+            ToolStripDropDown ddown = (ToolStripDropDown)sender;
+            ddown.AutoClose = true;
+            bool close = true;
+            foreach ( ToolStripDropDownItem mi in ddown.Items)
+                if ( mi.DropDown.Visible )
+                {
+                    close = false;
+                    break;
+                }
+            if (close)
+                ddown.Close();
+        }
+
+        private void miDropDownMouseEnter(object sender, EventArgs e )
+        {
+            ((ToolStripDropDown)sender).AutoClose = false;
         }
 
         private void miConfirm_DropDownOpening(object sender, EventArgs e)
