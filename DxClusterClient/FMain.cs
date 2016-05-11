@@ -50,6 +50,7 @@ namespace DxClusterClient
         public class Mode
         {
             public string name;
+            public string dxGridViewName;
             public List<string> aliases;
             public List<Mode> subItems;
         }
@@ -57,7 +58,7 @@ namespace DxClusterClient
         public static List<Mode> ModesList = new List<Mode> {
             new Mode { name = "CW" },
             new Mode { name = "FONE",
-                aliases = new List<string> { "USB", "LSB", "AM", "FM", "SSB" }
+                aliases = new List<string> { "USB", "LSB", "FM", "SSB" }
             },
             new Mode { name = "DIGI",
                 subItems = new List<Mode>
@@ -227,7 +228,6 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
-        private volatile bool dxccModeMenuProcessing = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
@@ -399,7 +399,7 @@ namespace DxClusterClient
         private void createModeMenuItem( Mode mode, Mode parent)
         {
             ToolStripMenuItem mi = new ToolStripMenuItem();
-            mi.Text = mode.name;
+            mi.Text = mode.name.Contains( "_ANY" ) ? "ANY" : mode.name;
             mi.Checked = true;
             mi.Enabled = parent == null || modesMenuItems[parent.name].Checked;
             if ( settings.dxccModes.Exists( x => x.modeName == mode.name ) )
@@ -414,6 +414,7 @@ namespace DxClusterClient
                     modesMenuItems[alias] = mi;
             if (mode.subItems != null)
             {
+                createModeMenuItem(new Mode { name = mode.name + "_ANY" }, mode);
                 foreach (Mode subItem in mode.subItems)
                     createModeMenuItem(subItem, mode);
                 mi.DropDown.MouseEnter += miDropDownMouseEnter;
@@ -457,6 +458,11 @@ namespace DxClusterClient
                     string pfx = "";
                     if (countryCodes.ContainsKey(dxcc))
                         pfx = countryCodes[dxcc];
+                    if ( pfx.Contains("#") )
+                    {
+                        string cs = getADIFField(line, "CALL");
+                        pfx = cs.Substring(0, pfx.Length);
+                    }
                     string band = getADIFField(line, "BAND");
                     if (band == "" || dxcc == "" || pfx == "")
                     {
@@ -571,13 +577,20 @@ namespace DxClusterClient
 
         }
 
+        private bool _testMode( string text, string mode )
+        {
+            return ( text.Contains(" " + mode + " ") || text.EndsWith(" " + mode) || text.StartsWith(mode + " ") || text == mode ) ||
+                ( text.Contains( " " + mode ) && Char.IsDigit( text[text.IndexOf( " " + mode ) + mode.Length + 1 ] ) ) || 
+                ( text.StartsWith( mode ) && Char.IsDigit( text[ mode.Length ] ) );
+        }
+
         private string testMode( string text, Mode mode )
         {
-            if (text.Contains(mode.name))
+            if ( _testMode( text, mode.name ) )
                 return mode.name;
             if (mode.aliases != null)
                 foreach (string alias in mode.aliases)
-                    if (text.Contains(alias))
+                    if (_testMode(text, alias))
                         return mode.name;
             if ( mode.subItems != null )
                 foreach ( Mode subItem in mode.subItems )
@@ -741,9 +754,12 @@ namespace DxClusterClient
             }
             else if ( modesMenuItems.ContainsValue( miSender ) )
             {
-                if ( settings.dxccModes.Exists( x => x.modeName == miSender.Text ) )
-                    settings.dxccModes.RemoveAll( x => x.modeName == miSender.Text );
-                settings.dxccModes.Add(new DXCCModeSettings { modeName = miSender.Text, enabled = miSender.Checked });
+                string modeName = miSender.Text;
+                if (modeName == "ANY")
+                    modeName = miSender.OwnerItem.Text + "_ANY";
+                if ( settings.dxccModes.Exists( x => x.modeName == modeName ) )
+                    settings.dxccModes.RemoveAll( x => x.modeName == modeName );
+                settings.dxccModes.Add(new DXCCModeSettings { modeName = modeName, enabled = miSender.Checked });
                 foreach (ToolStripMenuItem mi in miSender.DropDownItems)
                     mi.Enabled = miSender.Checked;
             }
@@ -753,6 +769,8 @@ namespace DxClusterClient
 
         private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            if (e.RowIndex >= 0 && e.RowIndex % 2 == 1)
+                e.CellStyle.BackColor = Color.LightGray;
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
@@ -764,27 +782,48 @@ namespace DxClusterClient
                 else
                 {
                     string text = record.text.ToLower();
-                    if (text.Contains("ncdxf") || record.text.Contains("beacon") || record.text.Contains("bcn"))
+                    if (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn"))
                         return;
                 }
                 bool contact = false;
                 bool confirm = false;
-                Predicate<ADIFHeader> adifFilter;
+                Predicate<ADIFHeader> adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x) { return false; });
                 if (miSelectPrefix.Checked)
                     adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
                    {
                        return x.prefix == record.prefix;
                    });
-                else if ( miSelectBand.Checked )
+                else if (miSelectBand.Checked)
                     adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
                     {
                         return x.prefix == record.prefix && x.band == record.band;
                     });
                 else
-                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                {
+                    bool any = false;
+                    if ( modesMenuItems[record.mode].OwnerItem != miModes )
                     {
-                        return x.prefix == record.prefix && x.band == record.band && x.mode == record.mode;
-                    });
+                        ToolStripMenuItem miOwner = (ToolStripMenuItem)modesMenuItems[record.mode].OwnerItem;
+                        any = modesMenuItems[miOwner.Text + "_ANY"].Checked;
+                        if (any)
+                        {
+                            List<string> modes = new List<string>();
+                            foreach (ToolStripMenuItem mi in miOwner.DropDownItems)
+                                if (!mi.Text.Contains("_ANY") && mi.Checked)
+                                    modes.Add(mi.Text);
+                            adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                            {
+                                return x.prefix == record.prefix && x.band == record.band && modes.Contains( x.mode );
+                            });
+
+                        }
+                    }
+                    if (!any)
+                        adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                        {
+                            return x.prefix == record.prefix && x.band == record.band && x.mode == record.mode;
+                        });
+                }
                 foreach ( KeyValuePair<ADIFHeader,ADIFState> hs in adifData.Where( x => adifFilter( x.Key ) ))
                 {
                     if ( !contact )
@@ -800,7 +839,7 @@ namespace DxClusterClient
                         break;
                 }
                 if (confirm)
-                    e.CellStyle.BackColor = Color.White;
+                    return;
                 else if (contact)
                 {
                     e.CellStyle.BackColor = Color.SteelBlue;
