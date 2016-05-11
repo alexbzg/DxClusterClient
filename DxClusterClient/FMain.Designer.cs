@@ -31,6 +31,9 @@ namespace DxClusterClient
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aDIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,6 +47,12 @@ namespace DxClusterClient
             this.miModes = new System.Windows.Forms.ToolStripMenuItem();
             this.miOpenDXCC = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvDxData = new System.Windows.Forms.DataGridView();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.bSendCmd = new System.Windows.Forms.Button();
+            this.tbCmd = new System.Windows.Forms.TextBox();
+            this.tbCluster = new System.Windows.Forms.TextBox();
+            this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cs = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -52,12 +61,6 @@ namespace DxClusterClient
             this.prefix = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.text = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.bSendCmd = new System.Windows.Forms.Button();
-            this.tbCmd = new System.Windows.Forms.TextBox();
-            this.tbCluster = new System.Windows.Forms.TextBox();
-            this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -190,63 +193,6 @@ namespace DxClusterClient
             this.dgvDxData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvDxData_CellFormatting);
             this.dgvDxData.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvDxData_ColumnWidthChanged);
             // 
-            // de
-            // 
-            this.de.DataPropertyName = "de";
-            this.de.HeaderText = "SPOTTER";
-            this.de.Name = "de";
-            this.de.ReadOnly = true;
-            // 
-            // cs
-            // 
-            this.cs.DataPropertyName = "cs";
-            this.cs.HeaderText = "CALLSIGN";
-            this.cs.Name = "cs";
-            this.cs.ReadOnly = true;
-            // 
-            // mode
-            // 
-            this.mode.DataPropertyName = "mode";
-            this.mode.HeaderText = "MODE";
-            this.mode.Name = "mode";
-            this.mode.ReadOnly = true;
-            // 
-            // band
-            // 
-            this.band.DataPropertyName = "band";
-            this.band.HeaderText = "BAND";
-            this.band.Name = "band";
-            this.band.ReadOnly = true;
-            // 
-            // freq
-            // 
-            this.freq.DataPropertyName = "freq";
-            this.freq.HeaderText = "FREQ";
-            this.freq.Name = "freq";
-            this.freq.ReadOnly = true;
-            // 
-            // prefix
-            // 
-            this.prefix.DataPropertyName = "prefix";
-            this.prefix.HeaderText = "DXCC";
-            this.prefix.Name = "prefix";
-            this.prefix.ReadOnly = true;
-            // 
-            // text
-            // 
-            this.text.DataPropertyName = "text";
-            this.text.HeaderText = "TEXT";
-            this.text.Name = "text";
-            this.text.ReadOnly = true;
-            this.text.Width = 300;
-            // 
-            // time
-            // 
-            this.time.DataPropertyName = "time";
-            this.time.HeaderText = "TIME";
-            this.time.Name = "time";
-            this.time.ReadOnly = true;
-            // 
             // statusStrip1
             // 
             this.statusStrip1.Location = new System.Drawing.Point(0, 650);
@@ -310,6 +256,69 @@ namespace DxClusterClient
             this.tbCluster.Size = new System.Drawing.Size(1075, 74);
             this.tbCluster.TabIndex = 0;
             // 
+            // de
+            // 
+            this.de.DataPropertyName = "de";
+            this.de.HeaderText = "SPOTTER";
+            this.de.Name = "de";
+            this.de.ReadOnly = true;
+            // 
+            // cs
+            // 
+            this.cs.DataPropertyName = "cs";
+            this.cs.HeaderText = "CALLSIGN";
+            this.cs.Name = "cs";
+            this.cs.ReadOnly = true;
+            // 
+            // mode
+            // 
+            this.mode.DataPropertyName = "mode";
+            this.mode.HeaderText = "MODE";
+            this.mode.Name = "mode";
+            this.mode.ReadOnly = true;
+            // 
+            // band
+            // 
+            this.band.DataPropertyName = "band";
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.band.DefaultCellStyle = dataGridViewCellStyle1;
+            this.band.HeaderText = "BAND";
+            this.band.Name = "band";
+            this.band.ReadOnly = true;
+            // 
+            // freq
+            // 
+            this.freq.DataPropertyName = "freq";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.freq.DefaultCellStyle = dataGridViewCellStyle2;
+            this.freq.HeaderText = "FREQ";
+            this.freq.Name = "freq";
+            this.freq.ReadOnly = true;
+            // 
+            // prefix
+            // 
+            this.prefix.DataPropertyName = "prefix";
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.prefix.DefaultCellStyle = dataGridViewCellStyle3;
+            this.prefix.HeaderText = "DXCC";
+            this.prefix.Name = "prefix";
+            this.prefix.ReadOnly = true;
+            // 
+            // text
+            // 
+            this.text.DataPropertyName = "text";
+            this.text.HeaderText = "TEXT";
+            this.text.Name = "text";
+            this.text.ReadOnly = true;
+            this.text.Width = 300;
+            // 
+            // time
+            // 
+            this.time.DataPropertyName = "time";
+            this.time.HeaderText = "TIME";
+            this.time.Name = "time";
+            this.time.ReadOnly = true;
+            // 
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -357,18 +366,18 @@ namespace DxClusterClient
         private System.Windows.Forms.ToolStripMenuItem miConfirm;
         private System.Windows.Forms.ToolStripMenuItem miOpenDXCC;
         private System.Windows.Forms.OpenFileDialog ofDialog;
-        private System.Windows.Forms.DataGridViewTextBoxColumn de;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cs;
-        private System.Windows.Forms.DataGridViewTextBoxColumn mode;
-        private System.Windows.Forms.DataGridViewTextBoxColumn band;
-        private System.Windows.Forms.DataGridViewTextBoxColumn freq;
-        private System.Windows.Forms.DataGridViewTextBoxColumn prefix;
-        private System.Windows.Forms.DataGridViewTextBoxColumn text;
-        private System.Windows.Forms.DataGridViewTextBoxColumn time;
         private System.Windows.Forms.ToolStripMenuItem aDIFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miLoadADIF;
         private System.Windows.Forms.ToolStripMenuItem miBands;
         private ToolStripMenuItem miModes;
+        private DataGridViewTextBoxColumn de;
+        private DataGridViewTextBoxColumn cs;
+        private DataGridViewTextBoxColumn mode;
+        private DataGridViewTextBoxColumn band;
+        private DataGridViewTextBoxColumn freq;
+        private DataGridViewTextBoxColumn prefix;
+        private DataGridViewTextBoxColumn text;
+        private DataGridViewTextBoxColumn time;
     }
 }
 

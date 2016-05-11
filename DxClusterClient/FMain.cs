@@ -58,7 +58,8 @@ namespace DxClusterClient
         public static List<Mode> ModesList = new List<Mode> {
             new Mode { name = "CW" },
             new Mode { name = "FONE",
-                aliases = new List<string> { "USB", "LSB", "FM", "SSB" }
+                aliases = new List<string> { "USB", "LSB", "FM", "SSB" },
+                dxGridViewName = "SSB"
             },
             new Mode { name = "DIGI",
                 subItems = new List<Mode>
@@ -71,6 +72,12 @@ namespace DxClusterClient
                     new Mode { name = "SSTV" }
                 }
             }
+        };
+
+        internal class ModeDictElement : Mode
+        {
+            public Mode parent;
+            public new List<ModeDictElement> subItems;
         };
 
         public static List<string> ConfirmationTypes = new List<string> { "Paper", "eQSL", "LOTW" };
@@ -231,6 +238,7 @@ namespace DxClusterClient
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
+        private Dictionary<string, ModeDictElement> modesDict = new Dictionary<string, ModeDictElement>();
 
         public FMain()
         {
@@ -399,7 +407,7 @@ namespace DxClusterClient
         private void createModeMenuItem( Mode mode, Mode parent)
         {
             ToolStripMenuItem mi = new ToolStripMenuItem();
-            mi.Text = mode.name.Contains( "_ANY" ) ? "ANY" : mode.name;
+            mi.Text = mode.name.EndsWith( "_ANY" ) ? "ANY" : mode.name;
             mi.Checked = true;
             mi.Enabled = parent == null || modesMenuItems[parent.name].Checked;
             if ( settings.dxccModes.Exists( x => x.modeName == mode.name ) )
@@ -409,6 +417,21 @@ namespace DxClusterClient
             ToolStripMenuItem parentMI = parent == null ? miModes : modesMenuItems[parent.name];
             parentMI.DropDownItems.Add(mi);
             modesMenuItems[mode.name] = mi;
+            if ( !mode.name.EndsWith( "_ANY" ) )
+            {
+                ModeDictElement mde = new ModeDictElement { name = mode.name, dxGridViewName = mode.dxGridViewName, aliases = mode.aliases };
+                if (mode.subItems != null)
+                    mde.subItems = new List<ModeDictElement>();
+                if (parent != null)
+                {
+                    modesDict[parent.name].subItems.Add(mde);
+                    mde.parent = modesDict[parent.name];
+                }
+                modesDict[mode.name] = mde;
+                if ( mode.aliases != null)
+                    foreach (string alias in mode.aliases)
+                        modesDict[alias] = mde;
+            }
             if (mode.aliases != null)
                 foreach (string alias in mode.aliases)
                     modesMenuItems[alias] = mi;
@@ -630,6 +653,8 @@ namespace DxClusterClient
                 }
                 if ( mode == "" )
                     mode = getDiap( modes, freq );
+                if (mode != "" && modesDict.ContainsKey(mode) && modesDict[mode].dxGridViewName != null)
+                    mode = modesDict[mode].dxGridViewName;
                 string band = getDiap(Bands, freq);
                 try
                 {
