@@ -246,6 +246,7 @@ namespace DxClusterClient
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string, ModeDictElement> modesDict = new Dictionary<string, ModeDictElement>();
+        private Dictionary<string, ToolStripButton> dxDataBandFiterButtons = new Dictionary<string, ToolStripButton>();
         private HashSet<string> lotw1 = new HashSet<string>();
 
         public FMain()
@@ -430,7 +431,23 @@ namespace DxClusterClient
 
             foreach (Mode mode in ModesList)
                 createModeMenuItem(mode, null);
+
+            foreach (Diap band in Bands)
+                createBandDgvDxDataFilterButton(band);
         }
+
+        private void createBandDgvDxDataFilterButton(Diap band)
+        {
+            ToolStripButton tsb = new ToolStripButton();
+            tsb.Checked = true;
+            tsb.CheckOnClick = true;
+            tsb.Text = band.name;
+            tsb.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            tsb.CheckedChanged += dgvDxDataFiltersChanged;
+            dxDataBandFiterButtons[band.name] = tsb;
+            tsFilter.Items.Add(tsb);
+        }
+
 
         private void createModeMenuItem( Mode mode, Mode parent)
         {
@@ -994,10 +1011,18 @@ namespace DxClusterClient
 
         private void dgvDxDataRowVisiblity( int c )
         {
+            DxItem dx = blDxData[c];
+            DataGridViewRow r = dgvDxData.Rows[c];
+            if ( dxDataBandFiterButtons.ContainsKey(dx.band) )
+            {
+                r.Visible = dxDataBandFiterButtons[dx.band].Checked;
+                if (!r.Visible)
+                    return;
+            }
             if (tsbNoCfm.Checked)
-                dgvDxData.Rows[c].Visible = !confirmContact(blDxData[c])[1];
+                r.Visible = !confirmContact(dx)[1];
             else
-                dgvDxData.Rows[c].Visible = true;
+                r.Visible = true;
         }
 
         private void dgvDxDataScrollToLast()
