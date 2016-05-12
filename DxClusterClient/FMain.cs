@@ -704,7 +704,10 @@ namespace DxClusterClient
                                         time = mtchDX.Groups[5].Value,
                                     });
                                 dgvDxData.ClearSelection();
-                                dgvDxData.FirstDisplayedScrollingRowIndex = dgvDxData.RowCount - 1;
+                                dgvDxData.CurrentCell = null;
+                                dgvDxDataRowVisiblity(0);
+                                dgvDxDataRowVisiblity(dgvDxData.RowCount - 1);
+                                dgvDxDataScrollToLast();
                             }
                         });
                 } catch (Exception e )
@@ -821,10 +824,75 @@ namespace DxClusterClient
             dgvDxData.Refresh();
         }
 
+        private bool[] confirmContact( DxItem dx )
+        {
+            bool[] r = new bool[2] { false, false };
+            Predicate<ADIFHeader> adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x) { return false; });
+            if (miSelectPrefix.Checked)
+                adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                {
+                    return x.prefix == dx.prefix;
+                });
+            else if (miSelectBand.Checked)
+                adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                {
+                    return x.prefix == dx.prefix && x.band == dx.band;
+                });
+            else
+            {
+                bool any = false;
+                if (modesMenuItems[dx.mode].OwnerItem != miModes)
+                {
+                    ToolStripMenuItem miOwner = (ToolStripMenuItem)modesMenuItems[dx.mode].OwnerItem;
+                    any = modesMenuItems[miOwner.Text + "_ANY"].Checked;
+                    if (any)
+                    {
+                        List<string> modes = new List<string>();
+                        foreach (ToolStripMenuItem mi in miOwner.DropDownItems)
+                            if (!mi.Text.Contains("_ANY") && mi.Checked)
+                                modes.Add(mi.Text);
+                        adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                        {
+                            return x.prefix == dx.prefix && x.band == dx.band && modes.Contains(x.mode);
+                        });
+
+                    }
+                }
+                if (!any)
+                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
+                    {
+                        return x.prefix == dx.prefix && x.band == dx.band && x.mode == dx.mode;
+                    });
+            }
+            foreach (KeyValuePair<ADIFHeader, ADIFState> hs in adifData.Where(x => adifFilter(x.Key)))
+            {
+                if (!r[0])
+                    r[0] = true;
+                int co = 0;
+                foreach (string ct in ConfirmationTypes)
+                    if (hs.Value.confirmation[co++] && confirmMenuItems[ct].Checked)
+                    {
+                        r[1]= true;
+                        break;
+                    }
+                if (r[1])
+                    break;
+            }
+
+            return r;
+        }
+
         private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.RowIndex % 2 == 1)
-                e.CellStyle.BackColor = Color.LightGray;
+            if (e.RowIndex > 1)
+            {
+                int visCount = 0;
+                for (int c = e.RowIndex - 1; c > 0; c--)
+                    if (dgvDxData.Rows[c].Visible)
+                        visCount++;
+                if (visCount % 2 == 1)
+                    e.CellStyle.BackColor = Color.LightGray;
+            }
             if ( adifData != null && e.RowIndex >= 0 && 
                 dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
                 DxItem record = blDxData[e.RowIndex];
@@ -839,62 +907,12 @@ namespace DxClusterClient
                     if (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn"))
                         return;
                 }
-                bool contact = false;
-                bool confirm = false;
-                Predicate<ADIFHeader> adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x) { return false; });
-                if (miSelectPrefix.Checked)
-                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
-                   {
-                       return x.prefix == record.prefix;
-                   });
-                else if (miSelectBand.Checked)
-                    adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
-                    {
-                        return x.prefix == record.prefix && x.band == record.band;
-                    });
-                else
+                bool[] cc = confirmContact( record );
+                if (cc[1])
                 {
-                    bool any = false;
-                    if ( modesMenuItems[record.mode].OwnerItem != miModes )
-                    {
-                        ToolStripMenuItem miOwner = (ToolStripMenuItem)modesMenuItems[record.mode].OwnerItem;
-                        any = modesMenuItems[miOwner.Text + "_ANY"].Checked;
-                        if (any)
-                        {
-                            List<string> modes = new List<string>();
-                            foreach (ToolStripMenuItem mi in miOwner.DropDownItems)
-                                if (!mi.Text.Contains("_ANY") && mi.Checked)
-                                    modes.Add(mi.Text);
-                            adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
-                            {
-                                return x.prefix == record.prefix && x.band == record.band && modes.Contains( x.mode );
-                            });
-
-                        }
-                    }
-                    if (!any)
-                        adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
-                        {
-                            return x.prefix == record.prefix && x.band == record.band && x.mode == record.mode;
-                        });
-                }
-                foreach ( KeyValuePair<ADIFHeader,ADIFState> hs in adifData.Where( x => adifFilter( x.Key ) ))
-                {
-                    if ( !contact )
-                        contact = true;
-                    int co = 0;
-                    foreach ( string ct in ConfirmationTypes )
-                        if ( hs.Value.confirmation[co++] && confirmMenuItems[ct].Checked )
-                        {
-                            confirm = true;
-                            break;
-                        }
-                    if (confirm)
-                        break;
-                }
-                if (confirm)
                     return;
-                else if (contact)
+                }
+                else if (cc[0])
                 {
                     e.CellStyle.BackColor = Color.SteelBlue;
                     e.CellStyle.ForeColor = Color.White;
@@ -966,6 +984,30 @@ namespace DxClusterClient
         {
             if (miBands.DropDown.Visible)
                 miBands.DropDown.Close();
+        }
+
+        private void dgvDxDataFiltersChanged( object sender, EventArgs e )
+        {
+            for (int c = 0; c < dgvDxData.RowCount; c++)
+                dgvDxDataRowVisiblity(c);
+        }
+
+        private void dgvDxDataRowVisiblity( int c )
+        {
+            if (tsbNoCfm.Checked)
+                dgvDxData.Rows[c].Visible = !confirmContact(blDxData[c])[1];
+            else
+                dgvDxData.Rows[c].Visible = true;
+        }
+
+        private void dgvDxDataScrollToLast()
+        {
+            for (int c = dgvDxData.RowCount - 1; c > 0; c--)
+                if (dgvDxData.Rows[c].Visible)
+                {
+                    dgvDxData.FirstDisplayedScrollingRowIndex = c;
+                    break;
+                }
         }
     }
 }

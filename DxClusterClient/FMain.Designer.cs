@@ -34,6 +34,7 @@ namespace DxClusterClient
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FMain));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aDIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,20 +55,23 @@ namespace DxClusterClient
             this.tbCluster = new System.Windows.Forms.TextBox();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.L = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cs = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.L = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.band = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.freq = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.prefix = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.text = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tsFilter = new System.Windows.Forms.ToolStrip();
+            this.tsbNoCfm = new System.Windows.Forms.ToolStripButton();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.tsFilter.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -116,7 +120,7 @@ namespace DxClusterClient
             this.miSelectBand,
             this.miSelectMode});
             this.miSelect.Name = "miSelect";
-            this.miSelect.Size = new System.Drawing.Size(145, 22);
+            this.miSelect.Size = new System.Drawing.Size(152, 22);
             this.miSelect.Text = "Select";
             // 
             // miSelectPrefix
@@ -145,21 +149,21 @@ namespace DxClusterClient
             // miConfirm
             // 
             this.miConfirm.Name = "miConfirm";
-            this.miConfirm.Size = new System.Drawing.Size(145, 22);
+            this.miConfirm.Size = new System.Drawing.Size(152, 22);
             this.miConfirm.Text = "Confirmation";
             this.miConfirm.DropDownOpening += new System.EventHandler(this.miConfirm_DropDownOpening);
             // 
             // miBands
             // 
             this.miBands.Name = "miBands";
-            this.miBands.Size = new System.Drawing.Size(145, 22);
+            this.miBands.Size = new System.Drawing.Size(152, 22);
             this.miBands.Text = "Bands";
             this.miBands.DropDownOpening += new System.EventHandler(this.miBands_DropDownOpening);
             // 
             // miModes
             // 
             this.miModes.Name = "miModes";
-            this.miModes.Size = new System.Drawing.Size(145, 22);
+            this.miModes.Size = new System.Drawing.Size(152, 22);
             this.miModes.Text = "Modes";
             this.miModes.DropDownOpening += new System.EventHandler(this.miModes_DropDownOpening);
             // 
@@ -167,7 +171,7 @@ namespace DxClusterClient
             // 
             this.miOpenDXCC.Enabled = false;
             this.miOpenDXCC.Name = "miOpenDXCC";
-            this.miOpenDXCC.Size = new System.Drawing.Size(145, 22);
+            this.miOpenDXCC.Size = new System.Drawing.Size(152, 22);
             this.miOpenDXCC.Text = "Open table";
             this.miOpenDXCC.Click += new System.EventHandler(this.miOpenDXCC_Click);
             // 
@@ -175,22 +179,24 @@ namespace DxClusterClient
             // 
             this.dgvDxData.AccessibleRole = System.Windows.Forms.AccessibleRole.ScrollBar;
             this.dgvDxData.AllowUserToAddRows = false;
+            this.dgvDxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvDxData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDxData.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.de,
-            this.L,
             this.cs,
+            this.L,
             this.mode,
             this.band,
             this.freq,
             this.prefix,
             this.text,
             this.time});
-            this.dgvDxData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvDxData.Location = new System.Drawing.Point(0, 0);
+            this.dgvDxData.Location = new System.Drawing.Point(0, 29);
             this.dgvDxData.Name = "dgvDxData";
             this.dgvDxData.ReadOnly = true;
-            this.dgvDxData.Size = new System.Drawing.Size(1078, 513);
+            this.dgvDxData.Size = new System.Drawing.Size(1078, 484);
             this.dgvDxData.TabIndex = 1;
             this.dgvDxData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvDxData_CellFormatting);
             this.dgvDxData.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvDxData_ColumnWidthChanged);
@@ -218,6 +224,7 @@ namespace DxClusterClient
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.tsFilter);
             this.splitContainer1.Panel2.Controls.Add(this.dgvDxData);
             this.splitContainer1.Size = new System.Drawing.Size(1078, 625);
             this.splitContainer1.SplitterDistance = 108;
@@ -265,6 +272,13 @@ namespace DxClusterClient
             this.de.Name = "de";
             this.de.ReadOnly = true;
             // 
+            // cs
+            // 
+            this.cs.DataPropertyName = "cs";
+            this.cs.HeaderText = "CALLSIGN";
+            this.cs.Name = "cs";
+            this.cs.ReadOnly = true;
+            // 
             // L
             // 
             this.L.DataPropertyName = "l";
@@ -272,13 +286,6 @@ namespace DxClusterClient
             this.L.Name = "L";
             this.L.ReadOnly = true;
             this.L.Width = 20;
-            // 
-            // cs
-            // 
-            this.cs.DataPropertyName = "cs";
-            this.cs.HeaderText = "CALLSIGN";
-            this.cs.Name = "cs";
-            this.cs.ReadOnly = true;
             // 
             // mode
             // 
@@ -329,6 +336,27 @@ namespace DxClusterClient
             this.time.Name = "time";
             this.time.ReadOnly = true;
             // 
+            // tsFilter
+            // 
+            this.tsFilter.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbNoCfm});
+            this.tsFilter.Location = new System.Drawing.Point(0, 0);
+            this.tsFilter.Name = "tsFilter";
+            this.tsFilter.Size = new System.Drawing.Size(1078, 25);
+            this.tsFilter.TabIndex = 2;
+            this.tsFilter.Text = "toolStrip1";
+            // 
+            // tsbNoCfm
+            // 
+            this.tsbNoCfm.CheckOnClick = true;
+            this.tsbNoCfm.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbNoCfm.Image = ((System.Drawing.Image)(resources.GetObject("tsbNoCfm.Image")));
+            this.tsbNoCfm.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNoCfm.Name = "tsbNoCfm";
+            this.tsbNoCfm.Size = new System.Drawing.Size(57, 22);
+            this.tsbNoCfm.Text = "NO CFM";
+            this.tsbNoCfm.CheckedChanged += new System.EventHandler(this.dgvDxDataFiltersChanged);
+            // 
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -350,8 +378,11 @@ namespace DxClusterClient
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.tsFilter.ResumeLayout(false);
+            this.tsFilter.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -381,14 +412,16 @@ namespace DxClusterClient
         private System.Windows.Forms.ToolStripMenuItem miBands;
         private ToolStripMenuItem miModes;
         private DataGridViewTextBoxColumn de;
-        private DataGridViewTextBoxColumn L;
         private DataGridViewTextBoxColumn cs;
+        private DataGridViewTextBoxColumn L;
         private DataGridViewTextBoxColumn mode;
         private DataGridViewTextBoxColumn band;
         private DataGridViewTextBoxColumn freq;
         private DataGridViewTextBoxColumn prefix;
         private DataGridViewTextBoxColumn text;
         private DataGridViewTextBoxColumn time;
+        private ToolStrip tsFilter;
+        private ToolStripButton tsbNoCfm;
     }
 }
 
