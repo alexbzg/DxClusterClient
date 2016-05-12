@@ -884,10 +884,10 @@ namespace DxClusterClient
 
         private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex > 1)
+            if (e.RowIndex > 0)
             {
                 int visCount = 0;
-                for (int c = e.RowIndex - 1; c > 0; c--)
+                for (int c = e.RowIndex - 1; c >= 0; c--)
                     if (dgvDxData.Rows[c].Visible)
                         visCount++;
                 if (visCount % 2 == 1)
