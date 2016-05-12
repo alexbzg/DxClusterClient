@@ -54,6 +54,7 @@ namespace DxClusterClient
             this.tbCluster = new System.Windows.Forms.TextBox();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.L = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cs = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.band = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -177,6 +178,7 @@ namespace DxClusterClient
             this.dgvDxData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDxData.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.de,
+            this.L,
             this.cs,
             this.mode,
             this.band,
@@ -262,6 +264,14 @@ namespace DxClusterClient
             this.de.HeaderText = "SPOTTER";
             this.de.Name = "de";
             this.de.ReadOnly = true;
+            // 
+            // L
+            // 
+            this.L.DataPropertyName = "l";
+            this.L.HeaderText = "L";
+            this.L.Name = "L";
+            this.L.ReadOnly = true;
+            this.L.Width = 20;
             // 
             // cs
             // 
@@ -371,6 +381,7 @@ namespace DxClusterClient
         private System.Windows.Forms.ToolStripMenuItem miBands;
         private ToolStripMenuItem miModes;
         private DataGridViewTextBoxColumn de;
+        private DataGridViewTextBoxColumn L;
         private DataGridViewTextBoxColumn cs;
         private DataGridViewTextBoxColumn mode;
         private DataGridViewTextBoxColumn band;

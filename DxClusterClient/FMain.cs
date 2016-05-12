@@ -92,6 +92,13 @@ namespace DxClusterClient
             string _band;
             string _text;
             string _time;
+            string _l;
+
+            public string l
+            {
+                get { return _l; }
+                set { _l = value; }
+            }
 
             public string cs
             {
@@ -239,6 +246,7 @@ namespace DxClusterClient
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string, ModeDictElement> modesDict = new Dictionary<string, ModeDictElement>();
+        private HashSet<string> lotw1 = new HashSet<string>();
 
         public FMain()
         {
@@ -353,6 +361,26 @@ namespace DxClusterClient
             }
 
             Trace.WriteLine("Finished reading CountryCode.csv");
+
+            try
+            {
+                using (StreamReader sr = new StreamReader(Application.StartupPath + "\\lotw1.txt"))
+                {
+                    do
+                    {
+                        string line = sr.ReadLine();
+                        lotw1.Add(line);
+                    } while (sr.Peek() >= 0);
+
+                }
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.Message);
+            }
+
+            Trace.WriteLine("Finished reading bandMap.txt");
+
             Trace.WriteLine("FMain initialized");
 
             if (settings.adifFP != "" && File.Exists(settings.adifFP))
@@ -642,7 +670,7 @@ namespace DxClusterClient
                     for (int c = 1; c <= cs.Length; c++)
                         if (prefixes[0].ContainsKey(cs.Substring(0, c)))
                             country = prefixes[0][cs.Substring(0, c)];
-                Double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
+                double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
                 string mode = "";
                 string textU = mtchDX.Groups[4].Value.ToUpper();
                 foreach ( Mode modeI in ModesList)
@@ -664,16 +692,17 @@ namespace DxClusterClient
                             if (!closed)
                             {
                                 blDxData.Add(new DxItem
-                                {
-                                    cs = cs,
-                                    prefix = country,
-                                    de = mtchDX.Groups[1].Value,
-                                    freq = mtchDX.Groups[2].Value,
-                                    mode = mode,
-                                    band = band,
-                                    text = mtchDX.Groups[4].Value,
-                                    time = mtchDX.Groups[5].Value,
-                                });
+                                    {
+                                        cs = cs,
+                                        l = lotw1.Contains(cs) ? "+" : "",
+                                        prefix = country,
+                                        de = mtchDX.Groups[1].Value,
+                                        freq = mtchDX.Groups[2].Value,
+                                        mode = mode,
+                                        band = band,
+                                        text = mtchDX.Groups[4].Value,
+                                        time = mtchDX.Groups[5].Value,
+                                    });
                                 dgvDxData.ClearSelection();
                                 dgvDxData.FirstDisplayedScrollingRowIndex = dgvDxData.RowCount - 1;
                             }
