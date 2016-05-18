@@ -89,7 +89,8 @@ namespace DxClusterClient
             // aDIFToolStripMenuItem
             // 
             this.aDIFToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miLoadADIF});
+            this.miLoadADIF,
+            this.miBands});
             this.aDIFToolStripMenuItem.Name = "aDIFToolStripMenuItem";
             this.aDIFToolStripMenuItem.Size = new System.Drawing.Size(44, 19);
             this.aDIFToolStripMenuItem.Text = "ADIF";
@@ -106,7 +107,6 @@ namespace DxClusterClient
             this.dXCCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miSelect,
             this.miConfirm,
-            this.miBands,
             this.miModes,
             this.miOpenDXCC});
             this.dXCCToolStripMenuItem.Name = "dXCCToolStripMenuItem";

@@ -264,7 +264,7 @@ namespace AsyncConnectionNS
 
         private void processReply(string reply)
         {
-            System.Diagnostics.Debug.WriteLine(reply);
+            //System.Diagnostics.Debug.WriteLine(reply);
             if (replyTimer != null )
                 replyTimer.Change(Timeout.Infinite, Timeout.Infinite);
             if (currentCmd != null && currentCmd.cb != null)
@@ -295,7 +295,7 @@ namespace AsyncConnectionNS
         {
             if (socket != null && socket.Connected)
             {
-                Debug.WriteLine("sending: " + data);
+                //Debug.WriteLine("sending: " + data);
                 // Convert the string data to byte data using ASCII encoding.
                 byte[] byteData = Encoding.ASCII.GetBytes(data);
 
@@ -326,7 +326,7 @@ namespace AsyncConnectionNS
 
                 // Complete sending the data to the remote device.
                 int bytesSent = socket.EndSend(ar);
-                Debug.WriteLine("Sent {0} bytes to server.", bytesSent);
+                //Debug.WriteLine("Sent {0} bytes to server.", bytesSent);
 
                 // Signal that all bytes have been sent.
                 sendDone.Set();

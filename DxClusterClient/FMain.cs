@@ -248,7 +248,7 @@ namespace DxClusterClient
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string, ModeDictElement> modesDict = new Dictionary<string, ModeDictElement>();
-        private Dictionary<string, ToolStripButton> dxDataBandFiterButtons = new Dictionary<string, ToolStripButton>();
+        private Dictionary<string, ToolStripButton> dxDataBandFilterButtons = new Dictionary<string, ToolStripButton>();
         private HashSet<string> lotw1 = new HashSet<string>();
 
         public FMain()
@@ -449,10 +449,11 @@ namespace DxClusterClient
             else
                 tsb.Checked = true;
             tsb.CheckOnClick = true;
+            tsb.Visible = bandsMenuItems[band.name].Checked;
             tsb.Text = band.name;
             tsb.DisplayStyle = ToolStripItemDisplayStyle.Text;
             tsb.CheckedChanged += dgvDxDataFiltersChanged;
-            dxDataBandFiterButtons[band.name] = tsb;
+            dxDataBandFilterButtons[band.name] = tsb;
             tsFilter.Items.Add(tsb);
         }
 
@@ -833,6 +834,7 @@ namespace DxClusterClient
                 string band = bandsMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
                 int idx = Bands.FindIndex( x =>  x.name == band);
                 settings.dxccBand[idx] = miSender.Checked;
+                dxDataBandFilterButtons[band].Visible = miSender.Checked;
             }
             else if ( modesMenuItems.ContainsValue( miSender ) )
             {
@@ -1013,27 +1015,33 @@ namespace DxClusterClient
 
         private void dgvDxDataFiltersChanged( object sender, EventArgs e )
         {
-            ToolStripButton tsbSender = (ToolStripButton)sender;
-            if (tsbSender == tsbNoCfm)
-                settings.dgvDxFilterNoCfm = tsbNoCfm.Checked;
-            else
+            try
             {
-                string bandName = dxDataBandFiterButtons.FirstOrDefault(x => x.Value == tsbSender).Key;
-                settings.dgvDxFilterBands.RemoveAll(x => x.name == bandName);
-                settings.dgvDxFilterBands.Add(new SettingsListEntry { name = bandName, enabled = tsbSender.Checked });
+                ToolStripButton tsbSender = (ToolStripButton)sender;
+                if (tsbSender == tsbNoCfm)
+                    settings.dgvDxFilterNoCfm = tsbNoCfm.Checked;
+                else
+                {
+                    string bandName = dxDataBandFilterButtons.FirstOrDefault(x => x.Value == tsbSender).Key;
+                    settings.dgvDxFilterBands.RemoveAll(x => x.name == bandName);
+                    settings.dgvDxFilterBands.Add(new SettingsListEntry { name = bandName, enabled = tsbSender.Checked });
+                }
+                writeConfig();
+                for (int c = 0; c < dgvDxData.RowCount; c++)
+                    dgvDxDataRowVisiblity(c);
+            } catch ( Exception ex )
+            {
+                Trace.WriteLine(ex.Message);
             }
-            writeConfig();
-            for (int c = 0; c < dgvDxData.RowCount; c++)
-                dgvDxDataRowVisiblity(c);
         }
 
         private void dgvDxDataRowVisiblity( int c )
         {
             DxItem dx = blDxData[c];
             DataGridViewRow r = dgvDxData.Rows[c];
-            if ( dxDataBandFiterButtons.ContainsKey(dx.band) )
+            if ( dxDataBandFilterButtons.ContainsKey(dx.band) )
             {
-                r.Visible = dxDataBandFiterButtons[dx.band].Checked;
+                r.Visible = dxDataBandFilterButtons[dx.band].Checked;
                 if (!r.Visible)
                     return;
             }
