@@ -38,22 +38,16 @@ namespace DxClusterClient
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aDIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miLoadADIF = new System.Windows.Forms.ToolStripMenuItem();
+            this.miBands = new System.Windows.Forms.ToolStripMenuItem();
             this.dXCCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelect = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectPrefix = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectBand = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectMode = new System.Windows.Forms.ToolStripMenuItem();
             this.miConfirm = new System.Windows.Forms.ToolStripMenuItem();
-            this.miBands = new System.Windows.Forms.ToolStripMenuItem();
             this.miModes = new System.Windows.Forms.ToolStripMenuItem();
             this.miOpenDXCC = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvDxData = new System.Windows.Forms.DataGridView();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.bSendCmd = new System.Windows.Forms.Button();
-            this.tbCmd = new System.Windows.Forms.TextBox();
-            this.tbCluster = new System.Windows.Forms.TextBox();
-            this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.de = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cs = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.L = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -63,8 +57,14 @@ namespace DxClusterClient
             this.prefix = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.text = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.bSendCmd = new System.Windows.Forms.Button();
+            this.tbCmd = new System.Windows.Forms.TextBox();
+            this.tbCluster = new System.Windows.Forms.TextBox();
             this.tsFilter = new System.Windows.Forms.ToolStrip();
             this.tsbNoCfm = new System.Windows.Forms.ToolStripButton();
+            this.ofDialog = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -102,6 +102,13 @@ namespace DxClusterClient
             this.miLoadADIF.Text = "Load ADIF";
             this.miLoadADIF.Click += new System.EventHandler(this.miLoadADIF_Click);
             // 
+            // miBands
+            // 
+            this.miBands.Name = "miBands";
+            this.miBands.Size = new System.Drawing.Size(128, 22);
+            this.miBands.Text = "Bands";
+            this.miBands.DropDownOpening += new System.EventHandler(this.miBands_DropDownOpening);
+            // 
             // dXCCToolStripMenuItem
             // 
             this.dXCCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -120,7 +127,7 @@ namespace DxClusterClient
             this.miSelectBand,
             this.miSelectMode});
             this.miSelect.Name = "miSelect";
-            this.miSelect.Size = new System.Drawing.Size(152, 22);
+            this.miSelect.Size = new System.Drawing.Size(145, 22);
             this.miSelect.Text = "Select";
             // 
             // miSelectPrefix
@@ -149,21 +156,14 @@ namespace DxClusterClient
             // miConfirm
             // 
             this.miConfirm.Name = "miConfirm";
-            this.miConfirm.Size = new System.Drawing.Size(152, 22);
+            this.miConfirm.Size = new System.Drawing.Size(145, 22);
             this.miConfirm.Text = "Confirmation";
             this.miConfirm.DropDownOpening += new System.EventHandler(this.miConfirm_DropDownOpening);
-            // 
-            // miBands
-            // 
-            this.miBands.Name = "miBands";
-            this.miBands.Size = new System.Drawing.Size(152, 22);
-            this.miBands.Text = "Bands";
-            this.miBands.DropDownOpening += new System.EventHandler(this.miBands_DropDownOpening);
             // 
             // miModes
             // 
             this.miModes.Name = "miModes";
-            this.miModes.Size = new System.Drawing.Size(152, 22);
+            this.miModes.Size = new System.Drawing.Size(145, 22);
             this.miModes.Text = "Modes";
             this.miModes.DropDownOpening += new System.EventHandler(this.miModes_DropDownOpening);
             // 
@@ -171,7 +171,7 @@ namespace DxClusterClient
             // 
             this.miOpenDXCC.Enabled = false;
             this.miOpenDXCC.Name = "miOpenDXCC";
-            this.miOpenDXCC.Size = new System.Drawing.Size(152, 22);
+            this.miOpenDXCC.Size = new System.Drawing.Size(145, 22);
             this.miOpenDXCC.Text = "Open table";
             this.miOpenDXCC.Click += new System.EventHandler(this.miOpenDXCC_Click);
             // 
@@ -198,72 +198,7 @@ namespace DxClusterClient
             this.dgvDxData.ReadOnly = true;
             this.dgvDxData.Size = new System.Drawing.Size(1078, 484);
             this.dgvDxData.TabIndex = 1;
-            this.dgvDxData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvDxData_CellFormatting);
             this.dgvDxData.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvDxData_ColumnWidthChanged);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Location = new System.Drawing.Point(0, 650);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1078, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 25);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.bSendCmd);
-            this.splitContainer1.Panel1.Controls.Add(this.tbCmd);
-            this.splitContainer1.Panel1.Controls.Add(this.tbCluster);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.tsFilter);
-            this.splitContainer1.Panel2.Controls.Add(this.dgvDxData);
-            this.splitContainer1.Size = new System.Drawing.Size(1078, 625);
-            this.splitContainer1.SplitterDistance = 108;
-            this.splitContainer1.TabIndex = 3;
-            // 
-            // bSendCmd
-            // 
-            this.bSendCmd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bSendCmd.Location = new System.Drawing.Point(953, 78);
-            this.bSendCmd.Name = "bSendCmd";
-            this.bSendCmd.Size = new System.Drawing.Size(123, 28);
-            this.bSendCmd.TabIndex = 2;
-            this.bSendCmd.Text = "Send";
-            this.bSendCmd.UseVisualStyleBackColor = true;
-            this.bSendCmd.Click += new System.EventHandler(this.bSendCmd_Click);
-            // 
-            // tbCmd
-            // 
-            this.tbCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCmd.Location = new System.Drawing.Point(0, 79);
-            this.tbCmd.Name = "tbCmd";
-            this.tbCmd.Size = new System.Drawing.Size(953, 26);
-            this.tbCmd.TabIndex = 1;
-            this.tbCmd.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCmd_KeyDown);
-            // 
-            // tbCluster
-            // 
-            this.tbCluster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCluster.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbCluster.Location = new System.Drawing.Point(0, 3);
-            this.tbCluster.Multiline = true;
-            this.tbCluster.Name = "tbCluster";
-            this.tbCluster.ReadOnly = true;
-            this.tbCluster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbCluster.Size = new System.Drawing.Size(1075, 74);
-            this.tbCluster.TabIndex = 0;
             // 
             // de
             // 
@@ -335,6 +270,70 @@ namespace DxClusterClient
             this.time.HeaderText = "TIME";
             this.time.Name = "time";
             this.time.ReadOnly = true;
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Location = new System.Drawing.Point(0, 650);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1078, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 25);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.bSendCmd);
+            this.splitContainer1.Panel1.Controls.Add(this.tbCmd);
+            this.splitContainer1.Panel1.Controls.Add(this.tbCluster);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.tsFilter);
+            this.splitContainer1.Panel2.Controls.Add(this.dgvDxData);
+            this.splitContainer1.Size = new System.Drawing.Size(1078, 625);
+            this.splitContainer1.SplitterDistance = 108;
+            this.splitContainer1.TabIndex = 3;
+            // 
+            // bSendCmd
+            // 
+            this.bSendCmd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.bSendCmd.Location = new System.Drawing.Point(953, 78);
+            this.bSendCmd.Name = "bSendCmd";
+            this.bSendCmd.Size = new System.Drawing.Size(123, 28);
+            this.bSendCmd.TabIndex = 2;
+            this.bSendCmd.Text = "Send";
+            this.bSendCmd.UseVisualStyleBackColor = true;
+            this.bSendCmd.Click += new System.EventHandler(this.bSendCmd_Click);
+            // 
+            // tbCmd
+            // 
+            this.tbCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCmd.Location = new System.Drawing.Point(0, 79);
+            this.tbCmd.Name = "tbCmd";
+            this.tbCmd.Size = new System.Drawing.Size(953, 26);
+            this.tbCmd.TabIndex = 1;
+            this.tbCmd.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCmd_KeyDown);
+            // 
+            // tbCluster
+            // 
+            this.tbCluster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCluster.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbCluster.Location = new System.Drawing.Point(0, 3);
+            this.tbCluster.Multiline = true;
+            this.tbCluster.Name = "tbCluster";
+            this.tbCluster.ReadOnly = true;
+            this.tbCluster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbCluster.Size = new System.Drawing.Size(1075, 74);
+            this.tbCluster.TabIndex = 0;
             // 
             // tsFilter
             // 

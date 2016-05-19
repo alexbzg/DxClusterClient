@@ -349,7 +349,7 @@ namespace DxClusterClient
                 }
             } catch ( Exception e )
             {
-                Trace.WriteLine(e.Message);
+                Trace.WriteLine(e.ToString());
             }
 
             Trace.WriteLine("Finished reading bandMap.txt");
@@ -382,7 +382,7 @@ namespace DxClusterClient
             }
             catch (Exception e)
             {
-                Trace.WriteLine(e.Message);
+                Trace.WriteLine(e.ToString());
             }
 
             Trace.WriteLine("Finished reading bandMap.txt");
@@ -596,7 +596,7 @@ namespace DxClusterClient
                     }
                     catch (Exception e)
                     {
-                        System.Diagnostics.Debug.WriteLine(e.Message);
+                        System.Diagnostics.Debug.WriteLine(e.ToString());
                     }
                 }
             }
@@ -731,14 +731,14 @@ namespace DxClusterClient
                                     });
                                 dgvDxData.ClearSelection();
                                 dgvDxData.CurrentCell = null;
-                                dgvDxDataRowVisiblity(0);
-                                dgvDxDataRowVisiblity(dgvDxData.RowCount - 1);
+                                dgvDxDrawRow(0);
+                                dgvDxDrawRow(dgvDxData.RowCount - 1);
                                 dgvDxDataScrollToLast();
                             }
                         });
                 } catch (Exception e )
                 {
-                    Debug.WriteLine(e.Message);
+                    Debug.WriteLine(e.ToString());
                     Debug.WriteLine( "line recived: " + line );
                 }
 
@@ -868,7 +868,7 @@ namespace DxClusterClient
             else
             {
                 bool any = false;
-                if (modesMenuItems[dx.mode].OwnerItem != miModes)
+                if (modesMenuItems.ContainsKey(dx.mode) && modesMenuItems[dx.mode].OwnerItem != miModes)
                 {
                     ToolStripMenuItem miOwner = (ToolStripMenuItem)modesMenuItems[dx.mode].OwnerItem;
                     any = modesMenuItems[miOwner.Text + "_ANY"].Checked;
@@ -1028,17 +1028,19 @@ namespace DxClusterClient
                 }
                 writeConfig();
                 for (int c = 0; c < dgvDxData.RowCount; c++)
-                    dgvDxDataRowVisiblity(c);
+                    dgvDxDrawRow(c);
+                dgvDxDataScrollToLast();
             } catch ( Exception ex )
             {
-                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.ToString());
             }
         }
 
-        private void dgvDxDataRowVisiblity( int c )
+        private void dgvDxDrawRow( int c )
         {
             DxItem dx = blDxData[c];
             DataGridViewRow r = dgvDxData.Rows[c];
+            bool[] cc = confirmContact(dx);
             if ( dxDataBandFilterButtons.ContainsKey(dx.band) )
             {
                 r.Visible = dxDataBandFilterButtons[dx.band].Checked;
@@ -1046,9 +1048,49 @@ namespace DxClusterClient
                     return;
             }
             if (tsbNoCfm.Checked)
-                r.Visible = !confirmContact(dx)[1];
+            {
+                r.Visible = !cc[1];
+                if (!r.Visible)
+                    return;
+            }
             else
                 r.Visible = true;
+
+            int visCount = 0;
+            for (int co = c - 1; co >= 0; co--)
+                if (dgvDxData.Rows[co].Visible)
+                    visCount++;
+            bool odd = visCount % 2 == 1;
+            for ( int co = 0; co < dgvDxData.ColumnCount; co++)
+                r.Cells[co].Style.BackColor = odd ? Color.LightGray : Color.White;
+
+            if ( adifData != null ) {
+                if (dx.prefix == "" || 
+                    (!bandsMenuItems.ContainsKey(dx.band) || !bandsMenuItems[dx.band].Checked) ||
+                    (!modesMenuItems.ContainsKey(dx.mode) || !modesMenuItems[dx.mode].Enabled || !modesMenuItems[dx.mode].Checked) ||
+                    dx.cs.ToLower().EndsWith(@"/b"))
+                    return;
+                else
+                {
+                    string text = dx.text.ToLower();
+                    if (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn"))
+                        return;
+                }
+                if (cc[1])
+                {
+                    return;
+                }
+                else if (cc[0])
+                {
+                    r.Cells["prefix"].Style.BackColor = Color.SteelBlue;
+                    r.Cells["prefix"].Style.ForeColor = Color.White;
+                }
+                else
+                {
+                    r.Cells["prefix"].Style.BackColor = Color.Tomato;
+                    r.Cells["prefix"].Style.ForeColor = Color.White;
+                }
+            }
         }
 
         private void dgvDxDataScrollToLast()
