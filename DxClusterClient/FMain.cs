@@ -179,7 +179,7 @@ namespace DxClusterClient
         public class SettingsListEntry
         {
             public string name;
-            public bool enabled;
+            public bool status;
         }
 
         public class AppSettings
@@ -194,6 +194,7 @@ namespace DxClusterClient
             public List<bool> dxccBand;
             public List<SettingsListEntry> dxccModes;
             public bool dgvDxFilterNoCfm;
+            public bool dgvDxFilterBandsAll;
             public List<SettingsListEntry> dgvDxFilterBands;
         }
 
@@ -244,11 +245,14 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
+        private ToolStripButton tsbDxDataBandFilterAll;
+        private bool dxDataBandFilterAllProcessing = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> confirmMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string,ToolStripMenuItem> modesMenuItems = new Dictionary<string, ToolStripMenuItem>();
         private Dictionary<string, ModeDictElement> modesDict = new Dictionary<string, ModeDictElement>();
         private Dictionary<string, ToolStripButton> dxDataBandFilterButtons = new Dictionary<string, ToolStripButton>();
+        private Dictionary<string, bool> dxDataBandFilterButtonsPrevStatus = new Dictionary<string, bool>();
         private HashSet<string> lotw1 = new HashSet<string>();
 
         public FMain()
@@ -274,6 +278,7 @@ namespace DxClusterClient
             if (settings.dxccModes == null)
                 settings.dxccModes = new List<SettingsListEntry>();
             tsbNoCfm.Checked = settings.dgvDxFilterNoCfm;
+
 
             if (settings.dgvDXColumnWidth != null && settings.dgvDXColumnWidth.Count == dgvDxData.Columns.Count)
                 for (int c = 0; c < dgvDxData.Columns.Count; c++)
@@ -439,13 +444,47 @@ namespace DxClusterClient
 
             foreach (Diap band in Bands)
                 createBandDgvDxDataFilterButton(band);
+
+            tsbDxDataBandFilterAll = new ToolStripButton();
+            tsbDxDataBandFilterAll.CheckOnClick = true;
+            tsbDxDataBandFilterAll.Text = "ALL";
+            tsbDxDataBandFilterAll.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            tsbDxDataBandFilterAll.CheckedChanged += tsbDxDataBandFilterAllChanged;
+            tsFilter.Items.Add(tsbDxDataBandFilterAll);
+           
+
+
+        }
+
+        private void tsbDxDataBandFilterAllChanged(object sender, EventArgs e)
+        {
+            if (dxDataBandFilterAllProcessing)
+                return;
+            dxDataBandFilterAllProcessing = true;
+            if ( tsbDxDataBandFilterAll.Checked)
+            {
+                dxDataBandFilterButtonsPrevStatus.Clear();
+                foreach (KeyValuePair<string, ToolStripButton> kv in dxDataBandFilterButtons)
+                    if (kv.Value.Visible)
+                    {
+                        dxDataBandFilterButtonsPrevStatus[kv.Key] = kv.Value.Checked;
+                        kv.Value.Checked = true;
+                    }
+            }
+            else
+                foreach (KeyValuePair<string, bool> kv in dxDataBandFilterButtonsPrevStatus)
+                    dxDataBandFilterButtons[kv.Key].Checked = kv.Value;
+            settings.dgvDxFilterBandsAll = tsbDxDataBandFilterAll.Checked;
+            dxDataBandFilterAllProcessing = false;
+            dgvDxDataUpdate();
+            writeConfig();
         }
 
         private void createBandDgvDxDataFilterButton(Diap band)
         {
             ToolStripButton tsb = new ToolStripButton();
             if ( settings.dgvDxFilterBands != null && settings.dgvDxFilterBands.Exists(x => x.name == band.name))
-                tsb.Checked = settings.dgvDxFilterBands.FirstOrDefault(x => x.name == band.name).enabled;
+                tsb.Checked = settings.dgvDxFilterBands.FirstOrDefault(x => x.name == band.name).status;
             else
                 tsb.Checked = true;
             tsb.CheckOnClick = true;
@@ -465,7 +504,7 @@ namespace DxClusterClient
             mi.Checked = true;
             mi.Enabled = parent == null || modesMenuItems[parent.name].Checked;
             if ( settings.dxccModes.Exists( x => x.name == mode.name ) )
-                mi.Checked = settings.dxccModes.FirstOrDefault( x => x.name == mode.name ).enabled;
+                mi.Checked = settings.dxccModes.FirstOrDefault( x => x.name == mode.name ).status;
             mi.CheckOnClick = true;
             mi.CheckedChanged += miFilterCheckedChanged;
             ToolStripMenuItem parentMI = parent == null ? miModes : modesMenuItems[parent.name];
@@ -764,6 +803,7 @@ namespace DxClusterClient
             loaded = true;
             Trace.WriteLine("FMain loaded");
             login();
+            tsbDxDataBandFilterAll.Checked = settings.dgvDxFilterBandsAll;
         }
 
         private void bSendCmd_Click(object sender, EventArgs e)
@@ -834,7 +874,10 @@ namespace DxClusterClient
                 string band = bandsMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
                 int idx = Bands.FindIndex( x =>  x.name == band);
                 settings.dxccBand[idx] = miSender.Checked;
-                dxDataBandFilterButtons[band].Visible = miSender.Checked;
+                ToolStripButton tsb = dxDataBandFilterButtons[band];
+                tsb.Visible = miSender.Checked;
+                if (!tsb.Visible)
+                    tsb.Checked = false;
             }
             else if ( modesMenuItems.ContainsValue( miSender ) )
             {
@@ -843,7 +886,7 @@ namespace DxClusterClient
                     modeName = miSender.OwnerItem.Text + "_ANY";
                 if ( settings.dxccModes.Exists( x => x.name == modeName ) )
                     settings.dxccModes.RemoveAll( x => x.name == modeName );
-                settings.dxccModes.Add(new SettingsListEntry { name = modeName, enabled = miSender.Checked });
+                settings.dxccModes.Add(new SettingsListEntry { name = modeName, status = miSender.Checked });
                 foreach (ToolStripMenuItem mi in miSender.DropDownItems)
                     mi.Enabled = miSender.Checked;
             }
@@ -1022,18 +1065,44 @@ namespace DxClusterClient
                     settings.dgvDxFilterNoCfm = tsbNoCfm.Checked;
                 else
                 {
+                    if (dxDataBandFilterAllProcessing)
+                        return;
                     string bandName = dxDataBandFilterButtons.FirstOrDefault(x => x.Value == tsbSender).Key;
-                    settings.dgvDxFilterBands.RemoveAll(x => x.name == bandName);
-                    settings.dgvDxFilterBands.Add(new SettingsListEntry { name = bandName, enabled = tsbSender.Checked });
+                    if (!tsbSender.Checked && tsbDxDataBandFilterAll.Checked)
+                    {
+                        dxDataBandFilterAllProcessing = true;
+                        settings.dgvDxFilterBands.Clear();
+                        tsbDxDataBandFilterAll.Checked = false;
+                        settings.dgvDxFilterBandsAll = false;
+                        foreach (KeyValuePair<string, ToolStripButton> kv in dxDataBandFilterButtons)
+                        {
+                            kv.Value.Checked = kv.Value == tsbSender;
+                            settings.dgvDxFilterBands.Add(new SettingsListEntry { name = kv.Key, status = kv.Value.Checked });
+                        }
+                        dxDataBandFilterAllProcessing = false;
+                    }
+                    else
+                    {
+                        dxDataBandFilterButtonsPrevStatus[bandName] = tsbSender.Checked;
+                        settings.dgvDxFilterBands.RemoveAll(x => x.name == bandName);
+                        settings.dgvDxFilterBands.Add(new SettingsListEntry { name = bandName, status = tsbSender.Checked });
+                    }
                 }
                 writeConfig();
-                for (int c = 0; c < dgvDxData.RowCount; c++)
-                    dgvDxDrawRow(c);
-                dgvDxDataScrollToLast();
+                dgvDxDataUpdate();
             } catch ( Exception ex )
             {
                 Trace.WriteLine(ex.ToString());
             }
+        }
+
+        private void dgvDxDataUpdate()
+        {
+            dgvDxData.ClearSelection();
+            dgvDxData.CurrentCell = null;
+            for (int c = 0; c < dgvDxData.RowCount; c++)
+                dgvDxDrawRow(c);
+            dgvDxDataScrollToLast();
         }
 
         private void dgvDxDrawRow( int c )
