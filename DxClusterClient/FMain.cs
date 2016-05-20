@@ -94,6 +94,12 @@ namespace DxClusterClient
             string _time;
             string _l;
 
+            public bool isBeacon()
+            {
+                string text = _text.ToLower();
+                return (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn") || _cs.ToLower().EndsWith(@"/b"));
+            }
+
             public string l
             {
                 get { return _l; }
@@ -756,7 +762,7 @@ namespace DxClusterClient
                         {
                             if (!closed)
                             {
-                                blDxData.Add(new DxItem
+                                blDxData.Insert(0, new DxItem
                                     {
                                         cs = cs,
                                         l = lotw1.Contains(cs) ? "+" : "",
@@ -771,7 +777,6 @@ namespace DxClusterClient
                                 dgvDxData.ClearSelection();
                                 dgvDxData.CurrentCell = null;
                                 dgvDxDrawRow(0);
-                                dgvDxDrawRow(dgvDxData.RowCount - 1);
                                 dgvDxDataScrollToLast();
                             }
                         });
@@ -954,10 +959,10 @@ namespace DxClusterClient
 
         private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex > 0)
+            if (e.RowIndex >= 0)
             {
                 int visCount = 0;
-                for (int c = e.RowIndex - 1; c >= 0; c--)
+                for (int c = e.RowIndex + 1; c < dgvDxData.RowCount; c++)
                     if (dgvDxData.Rows[c].Visible)
                         visCount++;
                 if (visCount % 2 == 1)
@@ -1100,10 +1105,11 @@ namespace DxClusterClient
         {
             dgvDxData.ClearSelection();
             dgvDxData.CurrentCell = null;
-            for (int c = 0; c < dgvDxData.RowCount; c++)
+            for (int c = dgvDxData.RowCount - 1; c >= 0; c--)
                 dgvDxDrawRow(c);
             dgvDxDataScrollToLast();
         }
+
 
         private void dgvDxDrawRow( int c )
         {
@@ -1118,7 +1124,7 @@ namespace DxClusterClient
             }
             if (tsbNoCfm.Checked)
             {
-                r.Visible = !cc[1];
+                r.Visible = !dx.isBeacon() && !cc[1];
                 if (!r.Visible)
                     return;
             }
@@ -1126,7 +1132,7 @@ namespace DxClusterClient
                 r.Visible = true;
 
             int visCount = 0;
-            for (int co = c - 1; co >= 0; co--)
+            for (int co = c + 1; co < dgvDxData.RowCount; co++)
                 if (dgvDxData.Rows[co].Visible)
                     visCount++;
             bool odd = visCount % 2 == 1;
@@ -1136,13 +1142,12 @@ namespace DxClusterClient
             if ( adifData != null ) {
                 if (dx.prefix == "" || 
                     (!bandsMenuItems.ContainsKey(dx.band) || !bandsMenuItems[dx.band].Checked) ||
-                    (!modesMenuItems.ContainsKey(dx.mode) || !modesMenuItems[dx.mode].Enabled || !modesMenuItems[dx.mode].Checked) ||
-                    dx.cs.ToLower().EndsWith(@"/b"))
+                    (!modesMenuItems.ContainsKey(dx.mode) || !modesMenuItems[dx.mode].Enabled || !modesMenuItems[dx.mode].Checked) )
                     return;
                 else
                 {
                     string text = dx.text.ToLower();
-                    if (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn"))
+                    if (dx.isBeacon())
                         return;
                 }
                 if (cc[1])
