@@ -199,6 +199,7 @@ namespace DxClusterClient
             this.dgvDxData.Size = new System.Drawing.Size(1078, 484);
             this.dgvDxData.TabIndex = 1;
             this.dgvDxData.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvDxData_ColumnWidthChanged);
+            this.dgvDxData.SelectionChanged += new System.EventHandler(this.dgvDxData_SelectionChanged);
             // 
             // de
             // 

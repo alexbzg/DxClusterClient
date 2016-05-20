@@ -253,6 +253,7 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
+        private volatile bool dxDataLock = false;
         private ToolStripButton tsbDxDataBandFilterAll;
         private bool dxDataBandFilterAllProcessing = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
@@ -764,15 +765,25 @@ namespace DxClusterClient
                         {
                             if (!closed)
                             {
+                                while (dxDataLock);
+                                dxDataLock = true;
                                 DxItem prev = blDxData.FirstOrDefault(x => x.cs == cs && (freq - x.nFreq < 0.3 && x.nFreq - freq < 0.3));
                                 if ( prev != null )
                                 {
                                     int idx = blDxData.IndexOf(prev);
+                                    int pos = dgvDxData.FirstDisplayedScrollingRowIndex;
                                     blDxData.RemoveAt(idx);
                                     dgvDxData.ClearSelection();
                                     dgvDxData.CurrentCell = null;
                                     for (int c = idx - 1; c >= 0; c--)
                                         dgvDxDrawRow(c);
+                                    if (pos > dgvDxData.RowCount)
+                                        pos--;
+                                    while (pos > -1 && !dgvDxData.Rows[pos].Visible)
+                                        pos--;
+                                    if (pos>-1)
+                                        dgvDxData.FirstDisplayedScrollingRowIndex = pos;
+                                    Trace.WriteLine("removed duplicate at " + idx.ToString());
                                 }
                                 blDxData.Insert(0, new DxItem
                                 {
@@ -794,10 +805,12 @@ namespace DxClusterClient
                                 dgvDxData.ClearSelection();
                                 dgvDxData.CurrentCell = null;
                                 dgvDxDrawRow(0);
+                                dxDataLock = false;
                             }
                         });
                 } catch (Exception e )
                 {
+                    dxDataLock = false;
                     Debug.WriteLine(e.ToString());
                     Debug.WriteLine( "line recived: " + line );
                 }
@@ -1190,6 +1203,21 @@ namespace DxClusterClient
                     dgvDxData.FirstDisplayedScrollingRowIndex = c;
                     break;
                 }
+        }
+
+        private void dgvDxData_SelectionChanged(object sender, EventArgs e)
+        {            
+            /*Trace.WriteLine("selection changed");
+            for ( int c = 0; c < dgvDxData.SelectedCells.Count; c++)
+                Trace.WriteLine(blDxData[dgvDxData.SelectedCells[c].RowIndex].cs);*/
+            if (dgvDxData.SelectedCells.Count > 0)
+            {
+                int r = dgvDxData.SelectedCells[0].RowIndex;
+                dgvDxData.ClearSelection();
+                dgvDxData.CurrentCell = null;
+                dgvDxDrawRow(r);
+            }
+
         }
     }
 }
