@@ -93,6 +93,8 @@ namespace DxClusterClient
             string _text;
             string _time;
             string _l;
+            public DateTime dt;
+            public double nFreq;
 
             public bool isBeacon()
             {
@@ -762,22 +764,36 @@ namespace DxClusterClient
                         {
                             if (!closed)
                             {
+                                DxItem prev = blDxData.FirstOrDefault(x => x.cs == cs && (freq - x.nFreq < 0.3 && x.nFreq - freq < 0.3));
+                                if ( prev != null )
+                                {
+                                    int idx = blDxData.IndexOf(prev);
+                                    blDxData.RemoveAt(idx);
+                                    dgvDxData.ClearSelection();
+                                    dgvDxData.CurrentCell = null;
+                                    for (int c = idx - 1; c >= 0; c--)
+                                        dgvDxDrawRow(c);
+                                }
                                 blDxData.Insert(0, new DxItem
-                                    {
-                                        cs = cs,
-                                        l = lotw1.Contains(cs) ? "+" : "",
-                                        prefix = country,
-                                        de = mtchDX.Groups[1].Value,
-                                        freq = mtchDX.Groups[2].Value,
-                                        mode = mode,
-                                        band = band,
-                                        text = mtchDX.Groups[4].Value,
-                                        time = mtchDX.Groups[5].Value,
-                                    });
+                                {
+                                    cs = cs,
+                                    l = lotw1.Contains(cs) ? "+" : "",
+                                    prefix = country,
+                                    de = mtchDX.Groups[1].Value,
+                                    freq = mtchDX.Groups[2].Value,
+                                    mode = mode,
+                                    band = band,
+                                    text = mtchDX.Groups[4].Value,
+                                    time = mtchDX.Groups[5].Value,
+                                    dt = DateTime.Now,
+                                    nFreq = freq
+                                        });
+                                List<DxItem> old = blDxData.Where(x => x.dt < DateTime.Now.Subtract(new TimeSpan(0, 30, 0))).ToList();
+                                if (old.Count > 0)
+                                    old.ForEach(x => blDxData.Remove(x));
                                 dgvDxData.ClearSelection();
                                 dgvDxData.CurrentCell = null;
                                 dgvDxDrawRow(0);
-                                dgvDxDataScrollToLast();
                             }
                         });
                 } catch (Exception e )
@@ -1107,7 +1123,6 @@ namespace DxClusterClient
             dgvDxData.CurrentCell = null;
             for (int c = dgvDxData.RowCount - 1; c >= 0; c--)
                 dgvDxDrawRow(c);
-            dgvDxDataScrollToLast();
         }
 
 
