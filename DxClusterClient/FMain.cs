@@ -99,7 +99,7 @@ namespace DxClusterClient
             public bool isBeacon()
             {
                 string text = _text.ToLower();
-                return (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn") || _cs.ToLower().EndsWith(@"/b"));
+                return (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn") || _cs.ToLower().EndsWith(@"/b") || _mode == "BCN");
             }
 
             public string l
