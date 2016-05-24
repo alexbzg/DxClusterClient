@@ -689,12 +689,26 @@ namespace DxClusterClient
                         settings.port = port;
                     writeConfig();
 
-                    clusterCn = new AsyncConnection();
-                    clusterCn.lineReceived += lineReceived;
-                    if (clusterCn.connect(host, port))
+                    if (host == "test")
                     {
-                        clusterCn.sendCommand(callsign);
-                        this.Text += " connected to " + host + ":" + port.ToString();
+                        using (StreamReader sr = new StreamReader(Application.StartupPath + "\\test.txt"))
+                            do
+                            {
+                                LineReceivedEventArgs e = new LineReceivedEventArgs();
+                                e.line = sr.ReadLine();
+                                lineReceived(this, e);
+                            } while (sr.Peek() >= 0);
+                    }
+                    else
+                    {
+
+                        clusterCn = new AsyncConnection();
+                        clusterCn.lineReceived += lineReceived;
+                        if (clusterCn.connect(host, port))
+                        {
+                            clusterCn.sendCommand(callsign);
+                            this.Text += " connected to " + host + ":" + port.ToString();
+                        }
                     }
 
                 } 
