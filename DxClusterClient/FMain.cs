@@ -972,7 +972,7 @@ namespace DxClusterClient
                     mi.Enabled = miSender.Checked;
             }
             writeConfig();
-            dgvDxData.Refresh();
+            dgvDxDataUpdate(); 
         }
 
         private bool[] confirmContact( DxItem dx )
