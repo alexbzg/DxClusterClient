@@ -44,7 +44,19 @@ namespace DxClusterClient
                 new Diap { name = "6M", l = 50000, h = 54000 },
                 new Diap { name = "4M", l = 70000, h = 71000 },
                 new Diap { name = "2M", l = 144000, h = 148000 },
-                new Diap { name = "70cm", l = 420000, h = 450000 }
+                new Diap { name = "70cm", l = 420000, h = 450000 },
+                new Diap { name = "33cm", l = 902000, h = 928000 },
+                new Diap { name = "23cm", l = 1240000, h = 1300000 },
+                new Diap { name = "13cm", l = 2300000, h = 2450000 },
+                new Diap { name = "9cm", l = 3300000, h = 3500000 },
+                new Diap { name = "6cm", l = 5650000, h = 5925000 },
+                new Diap { name = "3cm", l = 10000000, h = 10500000 },
+                new Diap { name = "1.25cm", l = 24000000, h = 24250000 },
+                new Diap { name = "6mm", l = 47000000, h = 47200000 },
+                new Diap { name = "4mm", l = 75500000, h = 81000000 },
+                new Diap { name = "2.5mm", l = 119980000, h = 120020000 },
+                new Diap { name = "2mm", l = 142000000, h = 149000000 },
+                new Diap { name = "1mm", l = 241000000, h = 250000000 }
         };
 
         public class Mode
@@ -253,7 +265,7 @@ namespace DxClusterClient
         private ADIFData adifData;
         private bool loaded = false;
         private volatile bool closed = false;
-        private volatile bool dxDataLock = false;
+        private Object dxDataLock = new Object();
         private ToolStripButton tsbDxDataBandFilterAll;
         private bool dxDataBandFilterAllProcessing = false;
         private Dictionary<string,ToolStripMenuItem> bandsMenuItems = new Dictionary<string,ToolStripMenuItem>();
@@ -779,47 +791,47 @@ namespace DxClusterClient
                         {
                             if (!closed)
                             {
-                                while (dxDataLock);
-                                dxDataLock = true;
-                                DxItem prev = blDxData.FirstOrDefault(x => x.cs == cs && (freq - x.nFreq < 0.3 && x.nFreq - freq < 0.3));
-                                if ( prev != null )
+                                lock (dxDataLock)
                                 {
-                                    int idx = blDxData.IndexOf(prev);
-                                    int pos = dgvDxData.FirstDisplayedScrollingRowIndex;
-                                    blDxData.RemoveAt(idx);
+                                    DxItem prev = blDxData.FirstOrDefault(x => x.cs == cs && (freq - x.nFreq < 0.3 && x.nFreq - freq < 0.3));
+                                    if (prev != null)
+                                    {
+                                        int idx = blDxData.IndexOf(prev);
+                                        int pos = dgvDxData.FirstDisplayedScrollingRowIndex;
+                                        blDxData.RemoveAt(idx);
+                                        dgvDxData.ClearSelection();
+                                        dgvDxData.CurrentCell = null;
+                                        for (int c = idx - 1; c >= 0; c--)
+                                            dgvDxDrawRow(c);
+                                        if (pos > dgvDxData.RowCount)
+                                            pos--;
+                                        while (pos > -1 && !dgvDxData.Rows[pos].Visible)
+                                            pos--;
+                                        if (pos > -1)
+                                            dgvDxData.FirstDisplayedScrollingRowIndex = pos;
+                                        Trace.WriteLine("removed duplicate at " + idx.ToString());
+                                    }
+                                    blDxData.Insert(0, new DxItem
+                                    {
+                                        cs = cs,
+                                        l = lotw1.Contains(cs) ? "+" : "",
+                                        prefix = country,
+                                        de = mtchDX.Groups[1].Value,
+                                        freq = mtchDX.Groups[2].Value,
+                                        mode = mode,
+                                        band = band,
+                                        text = mtchDX.Groups[4].Value,
+                                        time = mtchDX.Groups[5].Value,
+                                        dt = DateTime.Now,
+                                        nFreq = freq
+                                    });
+                                    List<DxItem> old = blDxData.Where(x => x.dt < DateTime.Now.Subtract(new TimeSpan(0, 30, 0))).ToList();
+                                    if (old.Count > 0)
+                                        old.ForEach(x => blDxData.Remove(x));
                                     dgvDxData.ClearSelection();
                                     dgvDxData.CurrentCell = null;
-                                    for (int c = idx - 1; c >= 0; c--)
-                                        dgvDxDrawRow(c);
-                                    if (pos > dgvDxData.RowCount)
-                                        pos--;
-                                    while (pos > -1 && !dgvDxData.Rows[pos].Visible)
-                                        pos--;
-                                    if (pos>-1)
-                                        dgvDxData.FirstDisplayedScrollingRowIndex = pos;
-                                    Trace.WriteLine("removed duplicate at " + idx.ToString());
+                                    dgvDxDrawRow(0);
                                 }
-                                blDxData.Insert(0, new DxItem
-                                {
-                                    cs = cs,
-                                    l = lotw1.Contains(cs) ? "+" : "",
-                                    prefix = country,
-                                    de = mtchDX.Groups[1].Value,
-                                    freq = mtchDX.Groups[2].Value,
-                                    mode = mode,
-                                    band = band,
-                                    text = mtchDX.Groups[4].Value,
-                                    time = mtchDX.Groups[5].Value,
-                                    dt = DateTime.Now,
-                                    nFreq = freq
-                                        });
-                                List<DxItem> old = blDxData.Where(x => x.dt < DateTime.Now.Subtract(new TimeSpan(0, 30, 0))).ToList();
-                                if (old.Count > 0)
-                                    old.ForEach(x => blDxData.Remove(x));
-                                dgvDxData.ClearSelection();
-                                dgvDxData.CurrentCell = null;
-                                dgvDxDrawRow(0);
-                                dxDataLock = false;
                             }
                         });
                 } catch (Exception e )
@@ -1146,10 +1158,13 @@ namespace DxClusterClient
 
         private void dgvDxDataUpdate()
         {
-            dgvDxData.ClearSelection();
-            dgvDxData.CurrentCell = null;
-            for (int c = dgvDxData.RowCount - 1; c >= 0; c--)
-                dgvDxDrawRow(c);
+            lock (dxDataLock)
+            {
+                dgvDxData.ClearSelection();
+                dgvDxData.CurrentCell = null;
+                for (int c = dgvDxData.RowCount - 1; c >= 0; c--)
+                    dgvDxDrawRow(c);
+            }
         }
 
 
@@ -1232,6 +1247,10 @@ namespace DxClusterClient
                 dgvDxDrawRow(r);
             }
 
+        }
+
+        private void dgvDxData_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
         }
     }
 }
