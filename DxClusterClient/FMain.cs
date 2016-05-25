@@ -793,23 +793,17 @@ namespace DxClusterClient
                             {
                                 lock (dxDataLock)
                                 {
+                                    int pos = dgvDxData.FirstDisplayedScrollingRowIndex;
                                     DxItem prev = blDxData.FirstOrDefault(x => x.cs == cs && (freq - x.nFreq < 0.3 && x.nFreq - freq < 0.3));
                                     if (prev != null)
                                     {
                                         int idx = blDxData.IndexOf(prev);
-                                        int pos = dgvDxData.FirstDisplayedScrollingRowIndex;
                                         blDxData.RemoveAt(idx);
                                         dgvDxData.ClearSelection();
                                         dgvDxData.CurrentCell = null;
-                                        for (int c = idx - 1; c >= 0; c--)
-                                            dgvDxDrawRow(c);
-                                        if (pos > dgvDxData.RowCount)
-                                            pos--;
-                                        while (pos > -1 && !dgvDxData.Rows[pos].Visible)
-                                            pos--;
-                                        if (pos > -1)
-                                            dgvDxData.FirstDisplayedScrollingRowIndex = pos;
-                                        Trace.WriteLine("removed duplicate at " + idx.ToString());
+                                        for (int c = idx; c >= 0; c--)
+                                            if ( c < dgvDxData.RowCount )
+                                                dgvDxDrawRow(c);
                                     }
                                     blDxData.Insert(0, new DxItem
                                     {
@@ -831,6 +825,33 @@ namespace DxClusterClient
                                     dgvDxData.ClearSelection();
                                     dgvDxData.CurrentCell = null;
                                     dgvDxDrawRow(0);
+                                    int nPos = pos;
+                                    if (nPos > dgvDxData.RowCount)
+                                        nPos--;
+                                    while (nPos > -1 && !dgvDxData.Rows[nPos].Visible)
+                                        nPos--;
+                                    if (nPos > -1)
+                                    {
+                                        dgvDxData.FirstDisplayedScrollingRowIndex = nPos;
+                                        Trace.WriteLine("Scroll from " + pos.ToString() + " to " + nPos.ToString());
+                                    }
+                                    else
+                                    {
+                                        nPos = pos;
+                                        if (nPos < 0)
+                                            nPos = 0;
+                                        while (nPos < dgvDxData.RowCount && !dgvDxData.Rows[nPos].Visible)
+                                            nPos++;
+                                        if (nPos < dgvDxData.RowCount)
+                                        {
+                                            dgvDxData.FirstDisplayedScrollingRowIndex = nPos;
+                                            Trace.WriteLine("Scroll from " + pos.ToString() + " to " + nPos.ToString());
+                                        }
+                                        else
+                                        {
+                                            Trace.WriteLine("scroll canceled");
+                                        }
+                                    }
                                 }
                             }
                         });
@@ -956,7 +977,9 @@ namespace DxClusterClient
 
         private bool[] confirmContact( DxItem dx )
         {
-            bool[] r = new bool[2] { false, false };
+            bool[] r = { false, false };
+
+
             Predicate<ADIFHeader> adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x) { return false; });
             if (miSelectPrefix.Checked)
                 adifFilter = new Predicate<ADIFHeader>(delegate (ADIFHeader x)
@@ -1012,49 +1035,7 @@ namespace DxClusterClient
             return r;
         }
 
-        private void dgvDxData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                int visCount = 0;
-                for (int c = e.RowIndex + 1; c < dgvDxData.RowCount; c++)
-                    if (dgvDxData.Rows[c].Visible)
-                        visCount++;
-                if (visCount % 2 == 1)
-                    e.CellStyle.BackColor = Color.LightGray;
-            }
-            if ( adifData != null && e.RowIndex >= 0 && 
-                dgvDxData.Columns[e.ColumnIndex].DataPropertyName == "prefix") {
-                DxItem record = blDxData[e.RowIndex];
-                if (record.prefix == "" || 
-                    (!bandsMenuItems.ContainsKey(record.band) || !bandsMenuItems[record.band].Checked) ||
-                    (!modesMenuItems.ContainsKey(record.mode) || !modesMenuItems[record.mode].Enabled || !modesMenuItems[record.mode].Checked) ||
-                    record.cs.ToLower().EndsWith(@"/b"))
-                    return;
-                else
-                {
-                    string text = record.text.ToLower();
-                    if (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn"))
-                        return;
-                }
-                bool[] cc = confirmContact( record );
-                if (cc[1])
-                {
-                    return;
-                }
-                else if (cc[0])
-                {
-                    e.CellStyle.BackColor = Color.SteelBlue;
-                    e.CellStyle.ForeColor = Color.White;
-                }
-                else
-                {
-                    e.CellStyle.BackColor = Color.Tomato;
-                    e.CellStyle.ForeColor = Color.White;
-                }
-            }
-        }
-
+       
         private void dgvDxData_ColumnWidthChanged(object sender, DataGridViewColumnEventArgs e)
         {
             if (loaded)
@@ -1172,7 +1153,12 @@ namespace DxClusterClient
         {
             DxItem dx = blDxData[c];
             DataGridViewRow r = dgvDxData.Rows[c];
-            bool[] cc = confirmContact(dx);
+            bool[] cc = { true, true };
+            if (adifData != null && dx.prefix != "" &&
+                bandsMenuItems.ContainsKey(dx.band) && bandsMenuItems[dx.band].Checked &&
+                modesMenuItems.ContainsKey(dx.mode) && modesMenuItems[dx.mode].Enabled && modesMenuItems[dx.mode].Checked)
+                cc = confirmContact(dx);
+
             if ( dxDataBandFilterButtons.ContainsKey(dx.band) )
             {
                 r.Visible = dxDataBandFilterButtons[dx.band].Checked;
@@ -1196,17 +1182,7 @@ namespace DxClusterClient
             for ( int co = 0; co < dgvDxData.ColumnCount; co++)
                 r.Cells[co].Style.BackColor = odd ? Color.LightGray : Color.White;
 
-            if ( adifData != null ) {
-                if (dx.prefix == "" || 
-                    (!bandsMenuItems.ContainsKey(dx.band) || !bandsMenuItems[dx.band].Checked) ||
-                    (!modesMenuItems.ContainsKey(dx.mode) || !modesMenuItems[dx.mode].Enabled || !modesMenuItems[dx.mode].Checked) )
-                    return;
-                else
-                {
-                    string text = dx.text.ToLower();
-                    if (dx.isBeacon())
-                        return;
-                }
+            if (!dx.isBeacon()) { 
                 if (cc[1])
                 {
                     return;
