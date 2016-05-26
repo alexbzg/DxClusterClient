@@ -631,7 +631,9 @@ namespace DxClusterClient
             if (iheader < 0)
                 return "";
             int ibeg = line.IndexOf(">", iheader) + 1;
-            int iend = line.IndexOf(" ", ibeg);
+            int iend = line.IndexOfAny(" <".ToCharArray(), ibeg);
+            if (iend < 0)
+                iend = line.Length - 1;
             return line.Substring(ibeg, iend - ibeg);
         }
 
