@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using AsyncConnectionNS;
 using System.IO;
@@ -13,78 +11,15 @@ using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
+using DxData;
+
 
 namespace DxClusterClient
 {
     public partial class FMain : Form
     {
 
-        public class Diap
-        {
-            public Double l;
-            public Double h;
-            public string name;
-        }
-
-        public static List<Diap> Bands = new List<Diap> {
-                new Diap { name = "2190M", l = 136, h = 137 },
-                new Diap { name = "630M", l = 472, h = 479 },
-                new Diap { name = "560M", l = 501, h = 504 },
-                new Diap { name = "160M", l = 1800, h = 2000 },
-                new Diap { name = "80M", l = 3500, h = 4000 },
-                new Diap { name = "60M", l = 5102, h = 5406.5 },
-                new Diap { name = "40M", l = 7000, h = 7300 },
-                new Diap { name = "30M", l = 10000, h = 10150 },
-                new Diap { name = "20M", l = 14000, h = 14350 },
-                new Diap { name = "17M", l = 18068, h = 18168 },
-                new Diap { name = "15M", l = 21000, h = 21450 },
-                new Diap { name = "12M", l = 24890, h = 24990 },
-                new Diap { name = "10M", l = 28000, h = 29700 },
-                new Diap { name = "6M", l = 50000, h = 54000 },
-                new Diap { name = "4M", l = 70000, h = 71000 },
-                new Diap { name = "2M", l = 144000, h = 148000 },
-                new Diap { name = "70cm", l = 420000, h = 450000 },
-                new Diap { name = "33cm", l = 902000, h = 928000 },
-                new Diap { name = "23cm", l = 1240000, h = 1300000 },
-                new Diap { name = "13cm", l = 2300000, h = 2450000 },
-                new Diap { name = "9cm", l = 3300000, h = 3500000 },
-                new Diap { name = "6cm", l = 5650000, h = 5925000 },
-                new Diap { name = "3cm", l = 10000000, h = 10500000 },
-                new Diap { name = "1.25cm", l = 24000000, h = 24250000 },
-                new Diap { name = "6mm", l = 47000000, h = 47200000 },
-                new Diap { name = "4mm", l = 75500000, h = 81000000 },
-                new Diap { name = "2.5mm", l = 119980000, h = 120020000 },
-                new Diap { name = "2mm", l = 142000000, h = 149000000 },
-                new Diap { name = "1mm", l = 241000000, h = 250000000 }
-        };
-
-        public class Mode
-        {
-            public string name;
-            public string dxGridViewName;
-            public List<string> aliases;
-            public List<Mode> subItems;
-        }
-
-        public static List<Mode> ModesList = new List<Mode> {
-            new Mode { name = "CW" },
-            new Mode { name = "FONE",
-                aliases = new List<string> { "USB", "LSB", "FM", "SSB" },
-                dxGridViewName = "SSB"
-            },
-            new Mode { name = "DIGI",
-                subItems = new List<Mode>
-                {
-                    new Mode { name = "RTTY" },
-                    new Mode { name = "PSK" },
-                    new Mode { name = "JT65" },
-                    new Mode { name = "FSK" },
-                    new Mode { name = "OLIVIA" },
-                    new Mode { name = "SSTV" }
-                }
-            }
-        };
+        
 
         internal class ModeDictElement : Mode
         {
@@ -92,109 +27,7 @@ namespace DxClusterClient
             public new List<ModeDictElement> subItems;
         };
 
-        public static List<string> ConfirmationTypes = new List<string> { "Paper", "eQSL", "LOTW" };
 
-        class DxItem
-        {
-            string _de;
-            string _cs;
-            string _prefix;
-            string _freq;
-            string _mode;
-            string _band;
-            string _text;
-            string _time;
-            string _l;
-            public DateTime dt;
-            public double nFreq;
-
-            public bool isBeacon()
-            {
-                string text = _text.ToLower();
-                return (text.Contains("ncdxf") || text.Contains("beacon") || text.Contains("bcn") || _cs.ToLower().EndsWith(@"/b") || _mode == "BCN");
-            }
-
-            public string l
-            {
-                get { return _l; }
-                set { _l = value; }
-            }
-
-            public string cs
-            {
-                get { return _cs; }
-                set
-                {
-                    _cs = value;
-                }
-            }
-
-            public string de
-            {
-                get { return _de; }
-                set
-                {
-                    _de = value;
-                }
-            }
-
-            public string prefix
-            {
-                get { return _prefix; }
-                set
-                {
-                    _prefix = value;
-                }
-            }
-
-            public string freq
-            {
-                get { return _freq; }
-                set
-                {
-                    _freq = value;
-                }
-            }
-
-            public string mode
-            {
-                get { return _mode; }
-                set
-                {
-                    _mode = value;
-                }
-            }
-
-            public string band
-            {
-                get { return _band; }
-                set
-                {
-                    _band = value;
-                }
-            }
-
-
-            public string text
-            {
-                get { return _text; }
-                set
-                {
-                    _text = value;
-                }
-            }
-
-            public string time
-            {
-                get { return _time; }
-                set
-                {
-                    _time = value;
-                }
-            }
-
-
-        }
 
         public class SettingsListEntry
         {
@@ -218,41 +51,6 @@ namespace DxClusterClient
             public List<SettingsListEntry> dgvDxFilterBands;
         }
 
-        public class ADIFHeader
-        {
-            public string prefix;
-            public string band;
-            public string mode;
-
-            public override bool Equals(object other)
-            {
-                var otherAH = other as ADIFHeader;
-                if (otherAH == null)
-                    return false;
-                return ( prefix == otherAH.prefix ) && ( band == otherAH.band ) && ( mode == otherAH.mode );
-            }
-
-            public override int GetHashCode()
-            {
-                return ( prefix + " " + band + " " + mode ).GetHashCode();
-            }
-
-        }
-
-        public class ADIFState
-        {
-            public bool contact;
-            public List<bool> confirmation = new List<bool>();
-
-            public ADIFState()
-            {
-                contact = true;
-                foreach (string ct in ConfirmationTypes)
-                    confirmation.Add(false);
-            }
-        }
-
-        public class ADIFData : Dictionary<ADIFHeader, ADIFState> { }
 
         private Dictionary<string, string>[] prefixes =  new Dictionary<string, string>[2] { new Dictionary<string, string>(), new Dictionary<string, string>() };
         private Dictionary<string, string> countryCodes = new Dictionary<string, string>();
@@ -378,21 +176,8 @@ namespace DxClusterClient
                 Trace.WriteLine(e.ToString());
             }
 
-            Trace.WriteLine("Finished reading bandMap.txt");
 
-            using (StreamReader sr = new StreamReader(Application.StartupPath + "\\CountryCode.txt"))
-            {
-                do
-                {
-                    string line = sr.ReadLine();
-                    string[] parts = line.Split( ",".ToCharArray(), 3);
-                    if ( !parts[1].Equals( string.Empty ) )
-                        countryCodes.Add(parts[0], parts[1]);
-                } while (sr.Peek() >= 0);
-
-            }
-
-            Trace.WriteLine("Finished reading CountryCode.csv");
+            countryCodes = ADIFData.buildCountryCodes(Application.StartupPath + "\\CountryCode.txt");
 
             try
             {
@@ -411,15 +196,11 @@ namespace DxClusterClient
                 Trace.WriteLine(e.ToString());
             }
 
-            Trace.WriteLine("Finished reading bandMap.txt");
-
-            Trace.WriteLine("FMain initialized");
-
             if (settings.adifFP != "" && File.Exists(settings.adifFP))
                 loadADIF(settings.adifFP);
 
             int co = 0;
-            foreach ( Diap band in Bands )
+            foreach ( Diap band in DxConsts.Bands )
             {
                 ToolStripMenuItem mi = new ToolStripMenuItem();
                 mi.Text = band.name;
@@ -438,7 +219,7 @@ namespace DxClusterClient
             }
 
             co = 0;
-            foreach (string ct in ConfirmationTypes)
+            foreach (string ct in DxConsts.ConfirmationTypes)
             {
                 ToolStripMenuItem mi = new ToolStripMenuItem();
                 mi.Text = ct;
@@ -460,10 +241,10 @@ namespace DxClusterClient
             foreach (ToolStripMenuItem mi in new ToolStripMenuItem[] { miSelectPrefix, miSelectBand, miSelectMode })
                 mi.Checked = settings.dxccSelect == co++;
 
-            foreach (Mode mode in ModesList)
+            foreach (Mode mode in DxConsts.Modes)
                 createModeMenuItem(mode, null);
 
-            foreach (Diap band in Bands)
+            foreach (Diap band in DxConsts.Bands)
                 createBandDgvDxDataFilterButton(band);
 
             tsbDxDataBandFilterAll = new ToolStripButton();
@@ -475,6 +256,22 @@ namespace DxClusterClient
            
 
 
+        }
+
+        private void loadADIF( string adifFP )
+        {
+            try
+            {
+                adifData = new ADIFData(adifFP, countryCodes);
+            } catch (Exception e)
+            {
+                Trace.WriteLine("Error loading ADIF data from " + adifFP);
+                Trace.WriteLine(e.ToString());
+                return;
+            }
+            miOpenDXCC.Enabled = true;
+            settings.adifFP = adifFP;
+            writeConfig();
         }
 
         private void tsbDxDataBandFilterAllChanged(object sender, EventArgs e)
@@ -571,71 +368,6 @@ namespace DxClusterClient
 
 
 
-        private void loadADIF( string adifFP )
-        {
-            adifData = new ADIFData();
-            bool eoh = false;
-            string errorsFP = Path.GetDirectoryName(adifFP) + "\\AdifErrors.txt";
-            using (StreamReader sr = new StreamReader(adifFP))
-            using (StreamWriter errorsSW = new StreamWriter(errorsFP))
-            {
-                do
-                {
-                    string line = sr.ReadLine();
-                    if (!eoh)
-                    {
-                        if (line.Contains("<EOH>"))
-                            eoh = true;
-                        continue;
-                    }
-                    if (!line.StartsWith("<"))
-                        continue;
-                    string mode = getADIFField(line, "MODE");
-                    string dxcc = getADIFField(line, "DXCC");
-                    string pfx = "";
-                    if (countryCodes.ContainsKey(dxcc))
-                        pfx = countryCodes[dxcc];
-                    if ( pfx.Contains("#") )
-                    {
-                        string cs = getADIFField(line, "CALL");
-                        pfx = cs.Substring(0, pfx.Length);
-                    }
-                    string band = getADIFField(line, "BAND");
-                    if (band == "" || dxcc == "" || pfx == "")
-                    {
-                        errorsSW.WriteLine(line);
-                        continue;
-                    }
-                    bool qsl = getADIFField(line, "QSL_RCVD").Equals("Y");
-                    bool lotw = getADIFField(line, "LOTW_QSL_RCVD").Equals("Y");
-                    bool eqsl = getADIFField(line, "EQSL_QSL_RCVD").Equals("Y"); 
-                    ADIFHeader adifH = new ADIFHeader { prefix = pfx, band = band, mode = mode };
-                    if (!adifData.ContainsKey(adifH))
-                        adifData[adifH] = new ADIFState();
-                    adifData[adifH].confirmation[0] |= qsl;
-                    adifData[adifH].confirmation[1] |= eqsl;
-                    adifData[adifH].confirmation[2] |= lotw;
-                } while (sr.Peek() >= 0);
-
-            }
-
-            miOpenDXCC.Enabled = true;
-            settings.adifFP = adifFP;
-            writeConfig();
-
-        }
-
-        public static string getADIFField( string line, string field )
-        {
-            int iheader = line.IndexOf("<" + field + ":");
-            if (iheader < 0)
-                return "";
-            int ibeg = line.IndexOf(">", iheader) + 1;
-            int iend = line.IndexOfAny(" <".ToCharArray(), ibeg);
-            if (iend < 0)
-                iend = line.Length - 1;
-            return line.Substring(ibeg, iend - ibeg);
-        }
 
         private string configFilePath()
         {
@@ -775,7 +507,7 @@ namespace DxClusterClient
                 double freq = Convert.ToDouble(mtchDX.Groups[2].Value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
                 string mode = "";
                 string textU = mtchDX.Groups[4].Value.ToUpper();
-                foreach ( Mode modeI in ModesList)
+                foreach ( Mode modeI in DxConsts.Modes)
                 {
                     mode = testMode(textU, modeI);
                     if (mode != "")
@@ -785,7 +517,7 @@ namespace DxClusterClient
                     mode = getDiap( modes, freq );
                 if (mode != "" && modesDict.ContainsKey(mode) && modesDict[mode].dxGridViewName != null)
                     mode = modesDict[mode].dxGridViewName;
-                string band = getDiap(Bands, freq);
+                string band = getDiap(DxConsts.Bands, freq);
                 try
                 {
                     if (!closed)
@@ -949,13 +681,13 @@ namespace DxClusterClient
             if ( miSender.OwnerItem == miConfirm )
             {
                 string ct = confirmMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
-                int idx = ConfirmationTypes.FindIndex( x => x == ct );
+                int idx = DxConsts.ConfirmationTypes.FindIndex( x => x == ct );
                 settings.dxccConfirm[idx] = miSender.Checked;
             }
             else if ( miSender.OwnerItem == miBands )
             {
                 string band = bandsMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
-                int idx = Bands.FindIndex( x =>  x.name == band);
+                int idx = DxConsts.Bands.FindIndex( x =>  x.name == band);
                 settings.dxccBand[idx] = miSender.Checked;
                 ToolStripButton tsb = dxDataBandFilterButtons[band];
                 tsb.Visible = miSender.Checked;
@@ -1024,7 +756,7 @@ namespace DxClusterClient
                 if (!r[0])
                     r[0] = true;
                 int co = 0;
-                foreach (string ct in ConfirmationTypes)
+                foreach (string ct in DxConsts.ConfirmationTypes)
                     if (hs.Value.confirmation[co++] && confirmMenuItems[ct].Checked)
                     {
                         r[1]= true;
