@@ -12,6 +12,7 @@ namespace DxData
         public Double l;
         public Double h;
         public string name;
+        public string group;
     }
 
     public class Mode
@@ -27,9 +28,9 @@ namespace DxData
     public class DxConsts
     {
         public static List<Diap> Bands = new List<Diap> {
-                    new Diap { name = "2190M", l = 136, h = 137 },
-                    new Diap { name = "630M", l = 472, h = 479 },
-                    new Diap { name = "560M", l = 501, h = 504 },
+                    new Diap { name = "2190M", l = 136, h = 137, group = "LF" },
+                    new Diap { name = "630M", l = 472, h = 479, group = "LF" },
+                    new Diap { name = "560M", l = 501, h = 504, group = "LF" },
                     new Diap { name = "160M", l = 1800, h = 2000 },
                     new Diap { name = "80M", l = 3500, h = 4000 },
                     new Diap { name = "60M", l = 5102, h = 5406.5 },
@@ -41,21 +42,21 @@ namespace DxData
                     new Diap { name = "12M", l = 24890, h = 24990 },
                     new Diap { name = "10M", l = 28000, h = 29700 },
                     new Diap { name = "6M", l = 50000, h = 54000 },
-                    new Diap { name = "4M", l = 70000, h = 71000 },
-                    new Diap { name = "2M", l = 144000, h = 148000 },
-                    new Diap { name = "70cm", l = 420000, h = 450000 },
-                    new Diap { name = "33cm", l = 902000, h = 928000 },
-                    new Diap { name = "23cm", l = 1240000, h = 1300000 },
-                    new Diap { name = "13cm", l = 2300000, h = 2450000 },
-                    new Diap { name = "9cm", l = 3300000, h = 3500000 },
-                    new Diap { name = "6cm", l = 5650000, h = 5925000 },
-                    new Diap { name = "3cm", l = 10000000, h = 10500000 },
-                    new Diap { name = "1.25cm", l = 24000000, h = 24250000 },
-                    new Diap { name = "6mm", l = 47000000, h = 47200000 },
-                    new Diap { name = "4mm", l = 75500000, h = 81000000 },
-                    new Diap { name = "2.5mm", l = 119980000, h = 120020000 },
-                    new Diap { name = "2mm", l = 142000000, h = 149000000 },
-                    new Diap { name = "1mm", l = 241000000, h = 250000000 }
+                    new Diap { name = "4M", l = 70000, h = 71000, group = "VHF" },
+                    new Diap { name = "2M", l = 144000, h = 148000, group = "VHF" },
+                    new Diap { name = "70cm", l = 420000, h = 450000, group = "VHF" },
+                    new Diap { name = "33cm", l = 902000, h = 928000, group = "UHF" },
+                    new Diap { name = "23cm", l = 1240000, h = 1300000, group = "UHF" },
+                    new Diap { name = "13cm", l = 2300000, h = 2450000, group = "UHF" },
+                    new Diap { name = "9cm", l = 3300000, h = 3500000, group = "UHF" },
+                    new Diap { name = "6cm", l = 5650000, h = 5925000, group = "UHF" },
+                    new Diap { name = "3cm", l = 10000000, h = 10500000, group = "SHF" },
+                    new Diap { name = "1.25cm", l = 24000000, h = 24250000, group = "SHF" },
+                    new Diap { name = "6mm", l = 47000000, h = 47200000, group = "SHF" },
+                    new Diap { name = "4mm", l = 75500000, h = 81000000, group = "SHF" },
+                    new Diap { name = "2.5mm", l = 119980000, h = 120020000, group = "SHF" },
+                    new Diap { name = "2mm", l = 142000000, h = 149000000, group = "SHF" },
+                    new Diap { name = "1mm", l = 241000000, h = 250000000, group = "SHF" }
             };
 
 

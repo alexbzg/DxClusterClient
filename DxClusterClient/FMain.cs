@@ -44,7 +44,7 @@ namespace DxClusterClient
             public List<int> dgvDXColumnWidth = new List<int>();
             public int dxccSelect;
             public List<bool> dxccConfirm;
-            public List<bool> dxccBand;
+            public List<SettingsListEntry> dxccBand;
             public List<SettingsListEntry> dxccModes;
             public bool dgvDxFilterNoCfm;
             public bool dgvDxFilterBandsAll;
@@ -202,20 +202,12 @@ namespace DxClusterClient
             int co = 0;
             foreach ( Diap band in DxConsts.Bands )
             {
-                ToolStripMenuItem mi = new ToolStripMenuItem();
-                mi.Text = band.name;
-                mi.Checked = settings.dxccBand != null && settings.dxccBand.Count > co ? settings.dxccBand[co] : true;
-                mi.CheckOnClick = true;
-                mi.CheckedChanged += miFilterCheckedChanged;
-                miBands.DropDownItems.Add(mi);
-                bandsMenuItems[band.name] = mi;
-                co++;
             }
             if ( settings.dxccBand == null || settings.dxccBand.Count < bandsMenuItems.Count)
             {
-                settings.dxccBand = new List<bool>();
+                settings.dxccBand = new List<SettingsListEntry>();
                 foreach (ToolStripMenuItem mi in bandsMenuItems.Values)
-                    settings.dxccBand.Add(mi.Checked);
+                    settings.dxccBand.Add(new SettingsListEntry { name = mi.Text, status = mi.Checked });
             }
 
             co = 0;
@@ -245,7 +237,7 @@ namespace DxClusterClient
                 createModeMenuItem(mode, null);
 
             foreach (Diap band in DxConsts.Bands)
-                createBandDgvDxDataFilterButton(band);
+                createBandControls(band);
 
             tsbDxDataBandFilterAll = new ToolStripButton();
             tsbDxDataBandFilterAll.CheckOnClick = true;
@@ -282,12 +274,15 @@ namespace DxClusterClient
             if ( tsbDxDataBandFilterAll.Checked)
             {
                 dxDataBandFilterButtonsPrevStatus.Clear();
-                foreach (KeyValuePair<string, ToolStripButton> kv in dxDataBandFilterButtons)
-                    if (kv.Value.Visible)
-                    {
-                        dxDataBandFilterButtonsPrevStatus[kv.Key] = kv.Value.Checked;
-                        kv.Value.Checked = true;
-                    }
+                foreach (KeyValuePair<string, ToolStripButton> kv in dxDataBandFilterButtons) {
+                    if (kv.Value.Text != kv.Key)
+                        continue;
+                        if (kv.Value.Visible)
+                        {
+                            dxDataBandFilterButtonsPrevStatus[kv.Key] = kv.Value.Checked;
+                            kv.Value.Checked = true;
+                        }
+                }
             }
             else
                 foreach (KeyValuePair<string, bool> kv in dxDataBandFilterButtonsPrevStatus)
@@ -298,20 +293,50 @@ namespace DxClusterClient
             writeConfig();
         }
 
-        private void createBandDgvDxDataFilterButton(Diap band)
+        private void createBandControls(Diap band)
         {
+            string name;
+            if (band.group != null)
+            {
+                name = band.group;
+                if (bandsMenuItems.ContainsKey(name))
+                {
+                    bandsMenuItems[band.name] = bandsMenuItems[name];
+                    dxDataBandFilterButtons[band.name] = dxDataBandFilterButtons[name];
+                    return;
+                }
+            } else
+                name = band.name;
+
+            ToolStripMenuItem mi = new ToolStripMenuItem();
+            mi.Text = name;
+            if (settings.dxccBand != null && settings.dxccBand.Exists(x => x.name == name))
+                mi.Checked = settings.dxccBand.FirstOrDefault(x => x.name == name).status;
+            else
+                mi.Checked = true;
+            mi.CheckOnClick = true;
+            mi.CheckedChanged += miFilterCheckedChanged;
+            miBands.DropDownItems.Add(mi);
+            bandsMenuItems[name] = mi;
+
             ToolStripButton tsb = new ToolStripButton();
-            if ( settings.dgvDxFilterBands != null && settings.dgvDxFilterBands.Exists(x => x.name == band.name))
-                tsb.Checked = settings.dgvDxFilterBands.FirstOrDefault(x => x.name == band.name).status;
+            if ( settings.dgvDxFilterBands != null && settings.dgvDxFilterBands.Exists(x => x.name == name))
+                tsb.Checked = settings.dgvDxFilterBands.FirstOrDefault(x => x.name == name).status;
             else
                 tsb.Checked = true;
             tsb.CheckOnClick = true;
-            tsb.Visible = bandsMenuItems[band.name].Checked;
-            tsb.Text = band.name;
+            tsb.Visible = bandsMenuItems[name].Checked;
+            tsb.Text = name;
             tsb.DisplayStyle = ToolStripItemDisplayStyle.Text;
             tsb.CheckedChanged += dgvDxDataFiltersChanged;
             dxDataBandFilterButtons[band.name] = tsb;
             tsFilter.Items.Add(tsb);
+
+            if ( band.group != null )
+            {
+                bandsMenuItems[band.group] = mi;
+                dxDataBandFilterButtons[band.group] = tsb;
+            }
         }
 
 
@@ -689,10 +714,9 @@ namespace DxClusterClient
             }
             else if ( miSender.OwnerItem == miBands )
             {
-                string band = bandsMenuItems.FirstOrDefault(x => x.Value == miSender).Key;
-                int idx = DxConsts.Bands.FindIndex( x =>  x.name == band);
-                settings.dxccBand[idx] = miSender.Checked;
-                ToolStripButton tsb = dxDataBandFilterButtons[band];
+                settings.dxccBand.RemoveAll(x => x.name == miSender.Text);
+                settings.dxccBand.Add(new SettingsListEntry { name = miSender.Text, status = miSender.Checked });
+                ToolStripButton tsb = dxDataBandFilterButtons[miSender.Text];
                 tsb.Visible = miSender.Checked;
                 if (!tsb.Visible)
                     tsb.Checked = false;
@@ -845,7 +869,6 @@ namespace DxClusterClient
                 {
                     if (dxDataBandFilterAllProcessing)
                         return;
-                    string bandName = dxDataBandFilterButtons.FirstOrDefault(x => x.Value == tsbSender).Key;
                     if (!tsbSender.Checked && tsbDxDataBandFilterAll.Checked)
                     {
                         dxDataBandFilterAllProcessing = true;
@@ -861,9 +884,9 @@ namespace DxClusterClient
                     }
                     else
                     {
-                        dxDataBandFilterButtonsPrevStatus[bandName] = tsbSender.Checked;
-                        settings.dgvDxFilterBands.RemoveAll(x => x.name == bandName);
-                        settings.dgvDxFilterBands.Add(new SettingsListEntry { name = bandName, status = tsbSender.Checked });
+                        dxDataBandFilterButtonsPrevStatus[tsbSender.Text] = tsbSender.Checked;
+                        settings.dgvDxFilterBands.RemoveAll(x => x.name == tsbSender.Text);
+                        settings.dgvDxFilterBands.Add(new SettingsListEntry { name = tsbSender.Text, status = tsbSender.Checked });
                     }
                 }
                 writeConfig();
