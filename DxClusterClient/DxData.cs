@@ -20,6 +20,7 @@ namespace DxData
         public string dxGridViewName;
         public List<string> aliases;
         public List<Mode> subItems;
+        public bool isCategory = false;
     }
 
 
@@ -61,10 +62,12 @@ namespace DxData
         public static List<Mode> Modes = new List<Mode> {
                 new Mode { name = "CW" },
                 new Mode { name = "FONE",
+                    isCategory = true,
                     aliases = new List<string> { "USB", "LSB", "FM", "SSB" },
                     dxGridViewName = "SSB"
                 },
                 new Mode { name = "DIGI",
+                    isCategory = true,
                     subItems = new List<Mode>
                     {
                         new Mode { name = "RTTY" },

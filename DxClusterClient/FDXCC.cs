@@ -52,7 +52,7 @@ namespace DxClusterClient
             modes.Sort();
             foreach (string mode in modes)
                 clbModes.Items.Add(mode, true);
-            foreach (string ct in ConfirmationTypes)
+            foreach (string ct in DxConsts.ConfirmationTypes)
                 clbConfirmation.Items.Add(ct, true);
             
 
@@ -119,7 +119,7 @@ namespace DxClusterClient
                     {
                         contact |= kv.Value.contact;
                         int co = 0;
-                        foreach ( string ct in ConfirmationTypes )
+                        foreach ( string ct in DxConsts.ConfirmationTypes )
                             if ( kv.Value.confirmation[co++] && clbConfirmation.CheckedItems.Contains(ct))
                             {
                                 confirm = true;

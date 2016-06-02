@@ -509,9 +509,12 @@ namespace DxClusterClient
                 string textU = mtchDX.Groups[4].Value.ToUpper();
                 foreach ( Mode modeI in DxConsts.Modes)
                 {
-                    mode = testMode(textU, modeI);
-                    if (mode != "")
-                        break;
+                    if (!modeI.isCategory)
+                    {
+                        mode = testMode(textU, modeI);
+                        if (mode != "")
+                            break;
+                    }
                 }
                 if ( mode == "" )
                     mode = getDiap( modes, freq );
