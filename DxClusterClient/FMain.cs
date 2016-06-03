@@ -49,6 +49,8 @@ namespace DxClusterClient
             public bool dgvDxFilterNoCfm;
             public bool dgvDxFilterBandsAll;
             public List<SettingsListEntry> dgvDxFilterBands;
+            public Point formLocation;
+            public Size formSize;
         }
 
 
@@ -643,6 +645,11 @@ namespace DxClusterClient
 
         private void FMain_Load(object sender, EventArgs e)
         {
+            if (!settings.formSize.IsEmpty)
+            {
+                this.DesktopBounds =
+                    new Rectangle(settings.formLocation, settings.formSize);
+            }
             loaded = true;
             Trace.WriteLine("FMain loaded");
             login();
@@ -987,6 +994,17 @@ namespace DxClusterClient
 
         private void dgvDxData_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
+        }
+
+        private void FMain_ResizeEnd(object sender, EventArgs e)
+        {
+            if (loaded)
+            {
+                System.Drawing.Rectangle bounds = this.WindowState != FormWindowState.Normal ? this.RestoreBounds : this.DesktopBounds;
+                settings.formLocation = bounds.Location;
+                settings.formSize = bounds.Size;
+                writeConfig();
+            }
         }
     }
 }

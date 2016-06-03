@@ -31,9 +31,9 @@ namespace DxClusterClient
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FMain));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aDIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -233,8 +233,8 @@ namespace DxClusterClient
             // band
             // 
             this.band.DataPropertyName = "band";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            this.band.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.band.DefaultCellStyle = dataGridViewCellStyle7;
             this.band.HeaderText = "BAND";
             this.band.Name = "band";
             this.band.ReadOnly = true;
@@ -242,8 +242,8 @@ namespace DxClusterClient
             // freq
             // 
             this.freq.DataPropertyName = "freq";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            this.freq.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.freq.DefaultCellStyle = dataGridViewCellStyle8;
             this.freq.HeaderText = "FREQ";
             this.freq.Name = "freq";
             this.freq.ReadOnly = true;
@@ -251,8 +251,8 @@ namespace DxClusterClient
             // prefix
             // 
             this.prefix.DataPropertyName = "prefix";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.prefix.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.prefix.DefaultCellStyle = dataGridViewCellStyle9;
             this.prefix.HeaderText = "DXCC";
             this.prefix.Name = "prefix";
             this.prefix.ReadOnly = true;
@@ -372,6 +372,8 @@ namespace DxClusterClient
             this.Text = "DxClusterClient";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FMain_FormClosing);
             this.Load += new System.EventHandler(this.FMain_Load);
+            this.ResizeEnd += new System.EventHandler(this.FMain_ResizeEnd);
+            this.Move += new System.EventHandler(this.FMain_ResizeEnd);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDxData)).EndInit();
